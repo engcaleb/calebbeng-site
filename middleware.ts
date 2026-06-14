@@ -12,6 +12,7 @@ export async function middleware(request: NextRequest) {
     value: string;
     options: Record<string, unknown>;
   }> = [];
+  const pendingHeaders: Record<string, string> = {};
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -21,10 +22,11 @@ export async function middleware(request: NextRequest) {
         getAll() {
           return request.cookies.getAll();
         },
-        setAll(cookiesToSet) {
+        setAll(cookiesToSet, headers) {
           cookiesToSet.forEach(({ name, value, options }) => {
             pendingCookies.push({ name, value, options: options ?? {} });
           });
+          if (headers) Object.assign(pendingHeaders, headers);
         },
       },
     },
@@ -58,9 +60,12 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Apply any auth cookies to the final response
+  // Apply any auth cookies and cache-control headers to the final response
   pendingCookies.forEach(({ name, value, options }) => {
     response.cookies.set(name, value, options as Parameters<typeof response.cookies.set>[2]);
+  });
+  Object.entries(pendingHeaders).forEach(([key, value]) => {
+    response.headers.set(key, value);
   });
 
   return response;
