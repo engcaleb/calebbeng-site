@@ -1,11 +1,11 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 export async function upsertProduct(formData: FormData) {
-  const supabase = await createClient();
+  const supabase = createServiceClient();
 
   const id = formData.get("id") as string | null;
   const payload = {
@@ -36,7 +36,7 @@ export async function upsertProduct(formData: FormData) {
 }
 
 export async function toggleProductActive(formData: FormData) {
-  const supabase = await createClient();
+  const supabase = createServiceClient();
   const id = formData.get("id") as string;
   const current = formData.get("is_active") === "true";
 
