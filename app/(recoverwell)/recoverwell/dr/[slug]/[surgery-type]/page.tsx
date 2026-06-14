@@ -1,14 +1,180 @@
-export default async function DoctorRecommendationPage({
-  params,
-}: {
-  params: Promise<{ slug: string; "surgery-type": string }>;
-}) {
-  const { slug, "surgery-type": surgeryType } = await params;
+import { notFound } from "next/navigation";
+import Image from "next/image";
+import Link from "next/link";
+import { getPublishedPage } from "@/lib/recoverwell/pages";
+import type { Metadata } from "next";
+
+type Params = Promise<{ slug: string; "surgery-type": string }>;
+
+export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
+  const { slug, "surgery-type": surgerySegment } = await params;
+  const page = await getPublishedPage(slug, surgerySegment);
+  if (!page) return { title: "Not Found" };
+  return {
+    title: `${page.surgery_type} Recovery — ${page.practice.name}`,
+    description: `Doctor-curated ${page.surgery_type} recovery recommendations from ${page.practice.name}.`,
+  };
+}
+
+export default async function PatientPage({ params }: { params: Params }) {
+  const { slug, "surgery-type": surgerySegment } = await params;
+  const page = await getPublishedPage(slug, surgerySegment);
+  if (!page) notFound();
+
+  const { practice, surgery_type, products } = page;
+
+  // Group products by category to render section headers
+  const grouped = products.reduce<Record<string, typeof products>>((acc, p) => {
+    if (!acc[p.category]) acc[p.category] = [];
+    acc[p.category].push(p);
+    return acc;
+  }, {});
+
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#f9f7f4]">
-      <p className="font-mono text-sm text-[#1c1a17]/40">
-        Dr. {slug} — {surgeryType}
-      </p>
-    </main>
+    <div className="min-h-screen bg-[#f9f7f4]">
+      {/* ── HEADER ─────────────────────────────────────────────── */}
+      <header className="border-b border-[#1c1a17]/8 bg-white">
+        <div className="mx-auto max-w-2xl px-6 py-6">
+          {/* Practice identity */}
+          <div className="flex items-center gap-4">
+            {practice.logo_url ? (
+              <Image
+                src={practice.logo_url}
+                alt={`${practice.name} logo`}
+                width={56}
+                height={56}
+                className="rounded object-contain"
+              />
+            ) : (
+              <div className="flex h-14 w-14 items-center justify-center rounded bg-[#1c1a17]/6">
+                <span className="font-mono text-[10px] uppercase tracking-wider text-[#1c1a17]/35">
+                  {practice.name.slice(0, 2)}
+                </span>
+              </div>
+            )}
+            <div>
+              <p className="text-[15px] font-semibold text-[#1c1a17]">
+                {practice.name}
+              </p>
+              <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#1c1a17]/40">
+                {surgery_type} · Recovery Guide
+              </p>
+            </div>
+          </div>
+
+          {/* Title */}
+          <div className="mt-6 border-t border-[#1c1a17]/8 pt-6">
+            <h1 className="text-2xl font-medium tracking-tight text-[#1c1a17] sm:text-3xl">
+              Your Doctor&apos;s Recommendations
+            </h1>
+            <p className="mt-2 text-[14px] text-[#1c1a17]/50">
+              A short list. Use what you need, skip what you don&apos;t.
+            </p>
+          </div>
+        </div>
+      </header>
+
+      {/* ── PRODUCT CARDS ──────────────────────────────────────── */}
+      <main className="mx-auto max-w-2xl px-6 py-8">
+        {Object.entries(grouped).map(([category, items]) => (
+          <section key={category} className="mb-8">
+            <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.28em] text-[#1c1a17]/38">
+              {category}
+            </p>
+            <div className="space-y-3">
+              {items.map((product) => (
+                <ProductCard key={product.page_product_id} product={product} />
+              ))}
+            </div>
+          </section>
+        ))}
+
+        {products.length === 0 && (
+          <p className="py-16 text-center text-sm text-[#1c1a17]/40">
+            No products on this page yet.
+          </p>
+        )}
+      </main>
+
+      {/* ── FOOTER ─────────────────────────────────────────────── */}
+      <footer className="border-t border-[#1c1a17]/8 px-6 py-8">
+        <div className="mx-auto max-w-2xl">
+          <p className="text-center font-mono text-[10px] uppercase tracking-[0.22em] text-[#1c1a17]/28">
+            Not a substitute for medical advice · Follow your doctor&apos;s
+            instructions · Recover Well
+          </p>
+        </div>
+      </footer>
+    </div>
+  );
+}
+
+function ProductCard({
+  product,
+}: {
+  product: {
+    page_product_id: string;
+    name: string;
+    slug: string;
+    category: string;
+    image_url: string | null;
+    instructions: string | null;
+    buy_url: string | null;
+  };
+}) {
+  return (
+    <div className="flex gap-4 rounded-lg border border-[#1c1a17]/8 bg-white p-4 sm:p-5">
+      {/* Image */}
+      <div className="shrink-0">
+        {product.image_url ? (
+          <Image
+            src={product.image_url}
+            alt={product.name}
+            width={72}
+            height={72}
+            className="rounded object-contain"
+          />
+        ) : (
+          <div className="flex h-[72px] w-[72px] items-center justify-center rounded bg-[#1c1a17]/4">
+            <span className="text-2xl opacity-20">⬜</span>
+          </div>
+        )}
+      </div>
+
+      {/* Content */}
+      <div className="flex min-w-0 flex-1 flex-col gap-2">
+        <div>
+          <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#1c1a17]/35">
+            {product.category}
+          </p>
+          <p className="mt-0.5 text-[15px] font-semibold leading-snug text-[#1c1a17]">
+            {product.name}
+          </p>
+        </div>
+
+        {product.instructions && (
+          <p className="text-[13px] leading-[1.7] text-[#1c1a17]/60">
+            {product.instructions}
+          </p>
+        )}
+
+        {/* Buy button */}
+        <div className="mt-1">
+          {product.buy_url ? (
+            <Link
+              href={`/recoverwell/products/${product.slug}`}
+              className="inline-flex items-center gap-1.5 rounded bg-[#1c1a17] px-3.5 py-1.5 text-[12px] font-medium text-[#f9f7f4] transition hover:bg-[#1c1a17]/80"
+            >
+              Buy Now
+              <span aria-hidden="true">→</span>
+            </Link>
+          ) : (
+            <span className="font-mono text-[11px] text-[#1c1a17]/30">
+              Link coming soon
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }

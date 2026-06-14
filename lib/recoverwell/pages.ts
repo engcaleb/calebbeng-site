@@ -1,0 +1,127 @@
+import { createClient } from "@/lib/supabase/server";
+
+export type Practice = {
+  id: string;
+  name: string;
+  slug: string;
+  logo_url: string | null;
+};
+
+export type PageProduct = {
+  page_product_id: string;
+  sort_order: number;
+  instructions: string | null; // custom_instructions ?? default_instructions
+  product_id: string;
+  name: string;
+  slug: string;
+  category: string;
+  image_url: string | null;
+  buy_url: string | null;
+};
+
+export type PublishedPage = {
+  id: string;
+  surgery_type: string;
+  practice: Practice;
+  doctor_name: string;
+  products: PageProduct[];
+};
+
+// URL segment (e.g. "lasik", "cataract", "dry-eye") → DB value ("LASIK", "Cataract", …)
+export function urlToSurgeryType(segment: string): string {
+  const map: Record<string, string> = {
+    lasik: "LASIK",
+    cataract: "Cataract",
+    "dry-eye": "Dry Eye",
+    "retinal": "Retinal",
+    "corneal": "Corneal",
+  };
+  return (
+    map[segment] ??
+    segment
+      .split("-")
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(" ")
+  );
+}
+
+export async function getPublishedPage(
+  practiceSlug: string,
+  surgeryTypeSegment: string
+): Promise<PublishedPage | null> {
+  const supabase = await createClient();
+  const surgeryType = urlToSurgeryType(surgeryTypeSegment);
+
+  // 1 — practice
+  const { data: practice, error: practiceErr } = await supabase
+    .from("rw_practices")
+    .select("id, name, slug, logo_url")
+    .eq("slug", practiceSlug)
+    .single();
+  if (practiceErr || !practice) return null;
+
+  // 2 — doctor(s) for this practice
+  const { data: doctors } = await supabase
+    .from("rw_doctors")
+    .select("id, name")
+    .eq("practice_id", practice.id);
+  if (!doctors?.length) return null;
+
+  const doctorIds = doctors.map((d) => d.id);
+
+  // 3 — published recommendation page
+  const { data: page, error: pageErr } = await supabase
+    .from("rw_recommendation_pages")
+    .select("id, doctor_id, surgery_type")
+    .in("doctor_id", doctorIds)
+    .eq("surgery_type", surgeryType)
+    .eq("is_published", true)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .single();
+  if (pageErr || !page) return null;
+
+  const doctor = doctors.find((d) => d.id === page.doctor_id)!;
+
+  // 4 — page products with product details
+  const { data: rows } = await supabase
+    .from("rw_page_products")
+    .select(
+      `id, sort_order, custom_instructions,
+       rw_products ( id, name, slug, category, image_url, default_instructions, buy_url )`
+    )
+    .eq("page_id", page.id)
+    .order("sort_order", { ascending: true });
+
+  type ProductRow = {
+    id: string; name: string; slug: string; category: string;
+    image_url: string | null; default_instructions: string | null; buy_url: string | null;
+  };
+
+  const products: PageProduct[] = (rows ?? [])
+    .filter((r) => r.rw_products)
+    .map((r) => {
+      // Supabase may return the FK join as a single object or an array
+      const raw = r.rw_products as unknown;
+      const p = (Array.isArray(raw) ? raw[0] : raw) as ProductRow;
+      return {
+        page_product_id: r.id,
+        sort_order: r.sort_order,
+        instructions: r.custom_instructions ?? p.default_instructions,
+        product_id: p.id,
+        name: p.name,
+        slug: p.slug,
+        category: p.category,
+        image_url: p.image_url,
+        buy_url: p.buy_url,
+      };
+    });
+
+  return {
+    id: page.id,
+    surgery_type: page.surgery_type,
+    practice,
+    doctor_name: doctor.name,
+    products,
+  };
+}
