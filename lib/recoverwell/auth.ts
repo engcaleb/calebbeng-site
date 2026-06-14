@@ -39,8 +39,8 @@ export const requireDoctor = cache(async (): Promise<DoctorWithPractice> => {
     practice: DoctorWithPractice["practice"] | DoctorWithPractice["practice"][];
   };
 
-  return {
-    ...raw,
-    practice: Array.isArray(raw.practice) ? raw.practice[0] : raw.practice,
-  } as DoctorWithPractice;
+  const practice = Array.isArray(raw.practice) ? raw.practice[0] : raw.practice;
+  if (!practice) redirect("/recoverwell/portal/login");
+
+  return { ...raw, practice } as DoctorWithPractice;
 });
