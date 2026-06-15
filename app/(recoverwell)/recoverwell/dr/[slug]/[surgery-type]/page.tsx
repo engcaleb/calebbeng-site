@@ -115,9 +115,9 @@ export default async function PatientPage({ params }: { params: Params }) {
       {/* ── FOOTER ─────────────────────────────────────────────── */}
       <footer className="border-t border-[#1c1a17]/8 px-6 py-8">
         <div className="mx-auto max-w-2xl">
-          <p className="text-center font-mono text-[10px] uppercase tracking-[0.22em] text-[#1c1a17]/28">
-            Not a substitute for medical advice · Follow your doctor&apos;s
-            instructions · Recover Well
+          <p className="text-center font-mono text-[9px] uppercase tracking-[0.22em] text-[#1c1a17]/25 leading-[1.8]">
+            Not a substitute for medical advice<br />
+            Follow your doctor&apos;s instructions · Recover Well
           </p>
         </div>
       </footer>
