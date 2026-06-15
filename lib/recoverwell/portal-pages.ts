@@ -89,6 +89,18 @@ export async function getPageForEditor(
   };
 }
 
+export async function getDefaultProductIds(
+  surgeryType: string
+): Promise<string[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("rw_default_products")
+    .select("product_id")
+    .eq("surgery_type", surgeryType)
+    .order("sort_order", { ascending: true });
+  return (data ?? []).map((r) => r.product_id);
+}
+
 export async function getPageForPdf(
   pageId: string,
   doctorId: string

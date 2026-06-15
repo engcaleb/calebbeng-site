@@ -25,6 +25,24 @@ export async function createPage(formData: FormData) {
 
   if (error || !data) throw new Error("Failed to create page");
 
+  // Pre-populate with admin-defined defaults for this surgery type
+  const { data: defaults } = await supabase
+    .from("rw_default_products")
+    .select("product_id, sort_order")
+    .eq("surgery_type", surgeryType)
+    .order("sort_order", { ascending: true });
+
+  if (defaults && defaults.length > 0) {
+    await supabase.from("rw_page_products").insert(
+      defaults.map((d) => ({
+        page_id: data.id,
+        product_id: d.product_id,
+        custom_instructions: null,
+        sort_order: d.sort_order,
+      }))
+    );
+  }
+
   redirect(`/recoverwell/portal/pages/${data.id}/edit`);
 }
 

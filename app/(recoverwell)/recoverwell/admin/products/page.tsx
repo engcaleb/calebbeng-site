@@ -28,9 +28,17 @@ export default async function AdminProductsPage({
               Product Catalog
             </h1>
           </div>
-          <span className="rounded-full bg-[#1c1a17]/6 px-3 py-1 font-mono text-[12px] text-[#1c1a17]/50">
-            {products.length} products
-          </span>
+          <div className="flex items-center gap-4">
+            <a
+              href="/recoverwell/admin/defaults"
+              className="font-mono text-[12px] text-[#1c1a17]/40 hover:text-[#1c1a17]"
+            >
+              Defaults →
+            </a>
+            <span className="rounded-full bg-[#1c1a17]/6 px-3 py-1 font-mono text-[12px] text-[#1c1a17]/50">
+              {products.length} products
+            </span>
+          </div>
         </div>
       </header>
 

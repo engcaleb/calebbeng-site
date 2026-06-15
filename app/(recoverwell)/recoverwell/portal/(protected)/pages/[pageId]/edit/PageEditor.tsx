@@ -15,10 +15,12 @@ export function PageEditor({
   page,
   allProducts,
   practiceSlug,
+  defaultProductIds,
 }: {
   page: PageForEditor;
   allProducts: RwProduct[];
   practiceSlug: string;
+  defaultProductIds: string[];
 }) {
   const [selected, setSelected] = useState<Map<string, ProductState>>(
     () =>
@@ -150,6 +152,17 @@ export function PageEditor({
     });
   }
 
+  function handleRestoreDefaults() {
+    const entries: [string, ProductState][] = [];
+    defaultProductIds.forEach((id, i) => {
+      if (productById.has(id)) {
+        entries.push([id, { custom_instructions: null, sort_order: i }]);
+      }
+    });
+    setSelected(new Map(entries));
+    setSaveStatus("idle");
+  }
+
   return (
     <div>
       {/* ── Header ─────────────────────────────────────────── */}
@@ -189,6 +202,22 @@ export function PageEditor({
             {isPublishPending ? "…" : published ? "Published" : "Draft · Publish"}
           </button>
         </div>
+      </div>
+
+      {/* ── List header ────────────────────────────────────── */}
+      <div className="mb-3 flex items-center justify-between">
+        <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#1c1a17]/35">
+          Products ({selectedEntries.length})
+        </p>
+        {defaultProductIds.length > 0 && (
+          <button
+            type="button"
+            onClick={handleRestoreDefaults}
+            className="font-mono text-[11px] text-[#1c1a17]/35 underline underline-offset-2 hover:text-[#1c1a17] transition"
+          >
+            Restore defaults
+          </button>
+        )}
       </div>
 
       {/* ── Selected products ─────────────────────────────── */}
