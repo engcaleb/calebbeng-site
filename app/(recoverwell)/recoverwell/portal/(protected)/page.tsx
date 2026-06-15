@@ -11,7 +11,7 @@ export default async function PortalPage() {
         <div className="mb-8 flex items-center justify-between">
           <div>
             <h1 className="font-mono text-2xl font-semibold text-[#1c1a17]">
-              Welcome, Dr. {doctor.name}
+              Welcome, {doctor.name}
             </h1>
             <p className="mt-1 font-mono text-sm text-[#1c1a17]/50">
               {doctor.practice.name}
