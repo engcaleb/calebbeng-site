@@ -16,13 +16,6 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   };
 }
 
-const HONORIFICS = new Set(['dr.', 'mr.', 'ms.', 'mrs.']);
-
-function doctorInitials(name: string): string {
-  if (!name.trim()) return '?';
-  const words = name.split(' ').filter(w => !HONORIFICS.has(w.toLowerCase()));
-  return words.slice(0, 2).map(w => w[0]?.toUpperCase() ?? '').join('');
-}
 
 export default async function PatientPage({ params }: { params: Params }) {
   const { slug, "surgery-type": surgerySegment } = await params;
@@ -76,17 +69,10 @@ export default async function PatientPage({ params }: { params: Params }) {
               Your {surgery_type} Recovery Guide
             </h1>
             {page.show_doctor && (
-              <div className="mt-2 flex items-center gap-2">
-                <div className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full bg-[#d4e4f7]">
-                  <span className="text-[10px] font-bold text-[#2c5282]">
-                    {doctorInitials(doctor_name)}
-                  </span>
-                </div>
-                <p className="text-[12px] text-[#1c1a17]/50">
-                  Recommended by{" "}
-                  <span className="font-semibold text-[#1c1a17]">{doctor_name}</span>
-                </p>
-              </div>
+              <p className="mt-2 text-[12px] text-[#1c1a17]/50">
+                Recommended by{" "}
+                <span className="font-semibold text-[#1c1a17]">{doctor_name}</span>
+              </p>
             )}
           </div>
         </div>
