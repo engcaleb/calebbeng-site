@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { loginAction } from "./actions";
 
 export default async function LoginPage({
@@ -51,6 +52,16 @@ export default async function LoginPage({
             Sign in
           </button>
         </form>
+
+        <p className="mt-6 text-center text-[13px] text-[#1c1a17]/50">
+          New practice?{" "}
+          <Link
+            href="/recoverwell/portal/register"
+            className="text-[#1c1a17] underline underline-offset-2"
+          >
+            Create account
+          </Link>
+        </p>
       </div>
     </main>
   );
