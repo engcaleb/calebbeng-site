@@ -75,17 +75,19 @@ export default async function PatientPage({ params }: { params: Params }) {
             <h1 className="text-2xl font-medium tracking-tight text-[#1c1a17] sm:text-3xl">
               Your {surgery_type} Recovery Guide
             </h1>
-            <div className="mt-2 flex items-center gap-2">
-              <div className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full bg-[#d4e4f7]">
-                <span className="text-[10px] font-bold text-[#2c5282]">
-                  {doctorInitials(doctor_name)}
-                </span>
+            {page.show_doctor && (
+              <div className="mt-2 flex items-center gap-2">
+                <div className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full bg-[#d4e4f7]">
+                  <span className="text-[10px] font-bold text-[#2c5282]">
+                    {doctorInitials(doctor_name)}
+                  </span>
+                </div>
+                <p className="text-[12px] text-[#1c1a17]/50">
+                  Recommended by{" "}
+                  <span className="font-semibold text-[#1c1a17]">{doctor_name}</span>
+                </p>
               </div>
-              <p className="text-[12px] text-[#1c1a17]/50">
-                Recommended by{" "}
-                <span className="font-semibold text-[#1c1a17]">{doctor_name}</span>
-              </p>
-            </div>
+            )}
           </div>
         </div>
       </header>
