@@ -1,13 +1,17 @@
 // app/(recoverwell)/recoverwell/portal/(protected)/page.tsx
 import { requireDoctor } from "@/lib/recoverwell/auth";
+import { getMyPages } from "@/lib/recoverwell/portal-pages";
 import { logoutAction } from "../login/actions";
+import Link from "next/link";
 
 export default async function PortalPage() {
   const doctor = await requireDoctor();
+  const pages = await getMyPages(doctor.id);
 
   return (
     <main className="min-h-screen bg-[#f9f7f4] p-8">
       <div className="mx-auto max-w-4xl">
+        {/* Header */}
         <div className="mb-8 flex items-center justify-between">
           <div>
             <h1 className="font-mono text-2xl font-semibold text-[#1c1a17]">
@@ -17,18 +21,68 @@ export default async function PortalPage() {
               {doctor.practice.name}
             </p>
           </div>
-          <form action={logoutAction}>
-            <button type="submit" className="btn-ghost">
-              Sign out
-            </button>
-          </form>
+          <div className="flex items-center gap-3">
+            <Link href="/recoverwell/portal/pages/new" className="btn-primary">
+              New Page
+            </Link>
+            <form action={logoutAction}>
+              <button type="submit" className="btn-ghost">
+                Sign out
+              </button>
+            </form>
+          </div>
         </div>
 
-        <div className="rounded-xl border border-[#e8e3da] bg-white p-6">
-          <p className="font-mono text-sm text-[#1c1a17]/50">
-            Your recommendation pages will appear here.
-          </p>
-        </div>
+        {/* Page list */}
+        {pages.length === 0 ? (
+          <div className="rounded-xl border border-[#e8e3da] bg-white p-12 text-center">
+            <p className="font-mono text-sm text-[#1c1a17]/40">
+              No recommendation pages yet.
+            </p>
+            <Link
+              href="/recoverwell/portal/pages/new"
+              className="mt-4 inline-block btn-primary"
+            >
+              Create your first page
+            </Link>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {pages.map((page) => (
+              <div
+                key={page.id}
+                className="flex items-center justify-between rounded-xl border border-[#e8e3da] bg-white px-6 py-5"
+              >
+                <div>
+                  <p className="font-medium text-[#1c1a17]">
+                    {page.surgery_type}
+                  </p>
+                  <p className="mt-0.5 font-mono text-[12px] text-[#1c1a17]/40">
+                    {page.product_count}{" "}
+                    {page.product_count === 1 ? "product" : "products"}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span
+                    className={`rounded-full px-2.5 py-0.5 font-mono text-[11px] ${
+                      page.is_published
+                        ? "bg-green-50 text-green-700"
+                        : "bg-[#1c1a17]/6 text-[#1c1a17]/40"
+                    }`}
+                  >
+                    {page.is_published ? "Published" : "Draft"}
+                  </span>
+                  <Link
+                    href={`/recoverwell/portal/pages/${page.id}/edit`}
+                    className="font-mono text-[12px] text-[#1c1a17]/50 underline underline-offset-2 hover:text-[#1c1a17]"
+                  >
+                    Edit
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </main>
   );
