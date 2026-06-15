@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { savePageProducts, togglePublish } from "../../actions";
+import { savePageProducts, togglePublish, toggleShowDoctor } from "../../actions";
 import type { PageForEditor } from "@/lib/recoverwell/portal-pages";
 import type { RwProduct } from "@/lib/recoverwell/products";
 
@@ -33,11 +33,13 @@ export function PageEditor({
       )
   );
   const [published, setPublished] = useState(page.is_published);
+  const [showDoctor, setShowDoctor] = useState(page.show_doctor);
   const [saveStatus, setSaveStatus] = useState<
     "idle" | "saving" | "saved" | "error"
   >("idle");
   const [isSavePending, startSaveTransition] = useTransition();
   const [isPublishPending, startPublishTransition] = useTransition();
+  const [isShowDoctorPending, startShowDoctorTransition] = useTransition();
 
   // Group active products by category (preserving sort order from DB)
   const grouped = allProducts.reduce<Record<string, RwProduct[]>>((acc, p) => {
@@ -114,6 +116,17 @@ export function PageEditor({
     });
   }
 
+  function handleToggleShowDoctor() {
+    startShowDoctorTransition(async () => {
+      try {
+        await toggleShowDoctor(page.id, practiceSlug, page.surgery_type, showDoctor);
+        setShowDoctor((v) => !v);
+      } catch {
+        // silent — badge won't flip if it fails
+      }
+    });
+  }
+
   return (
     <div>
       {/* ── Header ─────────────────────────────────────────── */}
@@ -129,17 +142,30 @@ export function PageEditor({
             {page.surgery_type} · Recommendation Page
           </h1>
         </div>
-        <button
-          onClick={handleTogglePublish}
-          disabled={isPublishPending}
-          className={`mt-1 shrink-0 rounded-full px-3 py-1 font-mono text-[12px] transition disabled:opacity-50 ${
-            published
-              ? "bg-green-50 text-green-700 hover:bg-green-100"
-              : "bg-[#1c1a17]/6 text-[#1c1a17]/40 hover:bg-[#1c1a17]/10"
-          }`}
-        >
-          {isPublishPending ? "…" : published ? "Published" : "Draft · Publish"}
-        </button>
+        <div className="mt-1 flex shrink-0 gap-2">
+          <button
+            onClick={handleToggleShowDoctor}
+            disabled={isShowDoctorPending}
+            className={`rounded-full px-3 py-1 font-mono text-[12px] transition disabled:opacity-50 ${
+              showDoctor
+                ? "bg-[#1c1a17]/6 text-[#1c1a17]/40 hover:bg-[#1c1a17]/10"
+                : "bg-blue-50 text-blue-700 hover:bg-blue-100"
+            }`}
+          >
+            {isShowDoctorPending ? "…" : showDoctor ? "My name shown" : "Practice-wide"}
+          </button>
+          <button
+            onClick={handleTogglePublish}
+            disabled={isPublishPending}
+            className={`rounded-full px-3 py-1 font-mono text-[12px] transition disabled:opacity-50 ${
+              published
+                ? "bg-green-50 text-green-700 hover:bg-green-100"
+                : "bg-[#1c1a17]/6 text-[#1c1a17]/40 hover:bg-[#1c1a17]/10"
+            }`}
+          >
+            {isPublishPending ? "…" : published ? "Published" : "Draft · Publish"}
+          </button>
+        </div>
       </div>
 
       {/* ── Product list ────────────────────────────────────── */}
