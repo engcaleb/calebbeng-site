@@ -30,51 +30,50 @@ const s = StyleSheet.create({
     fontFamily: "Helvetica",
   },
   // ── Header ──────────────────────────────────────────────────
+  // 3-col: [logo] [practice info + title] [QR]
+  // Logo sits beside the title so it can be large without adding header height.
   header: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "flex-start",
+    gap: 14,
     marginBottom: 12,
   },
-  headerLeft: {
-    flex: 1,
-  },
-  headerLogoRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 10,
-  },
   logo: {
-    width: 56,
-    height: 56,
-    borderRadius: 6,
-    marginRight: 12,
+    width: 88,
+    height: 88,
+    borderRadius: 8,
+    flexShrink: 0,
   },
   logoPlaceholder: {
-    width: 56,
-    height: 56,
+    width: 88,
+    height: 88,
     backgroundColor: C.logoBg,
-    borderRadius: 6,
-    marginRight: 12,
+    borderRadius: 8,
+    flexShrink: 0,
     justifyContent: "center",
     alignItems: "center",
   },
   logoInitials: {
-    fontSize: 12,
+    fontSize: 16,
     color: C.muted,
     letterSpacing: 1,
     fontFamily: "Helvetica-Bold",
   },
+  headerCenter: {
+    flex: 1,
+    justifyContent: "space-between",
+  },
   practiceName: {
     fontSize: 13,
     fontFamily: "Helvetica-Bold",
-    marginBottom: 3,
+    marginBottom: 2,
     color: C.text,
   },
   surgeryLabel: {
     fontSize: 8,
     color: C.muted,
     letterSpacing: 1.5,
+    marginBottom: 8,
   },
   pageTitleSmall: {
     fontSize: 18,
@@ -95,8 +94,7 @@ const s = StyleSheet.create({
   },
   headerRight: {
     alignItems: "center",
-    marginLeft: 20,
-    paddingTop: 4,
+    flexShrink: 0,
   },
   qr: {
     width: 72,
@@ -221,27 +219,23 @@ export function RecoverWellDocument({
   return (
     <Document>
       <Page size="A4" style={s.page}>
-        {/* ── Header ── */}
+        {/* ── Header: [logo] [practice info + title] [QR] ── */}
         <View style={s.header}>
-          <View style={s.headerLeft}>
-            {/* Practice identity row */}
-            <View style={s.headerLogoRow}>
-              {page.practice_logo_url ? (
-                <Image src={page.practice_logo_url} style={s.logo} />
-              ) : (
-                <View style={s.logoPlaceholder}>
-                  <Text style={s.logoInitials}>{initials}</Text>
-                </View>
-              )}
-              <View>
-                <Text style={s.practiceName}>{page.practice_name}</Text>
-                <Text style={s.surgeryLabel}>
-                  {page.surgery_type.toUpperCase()} · RECOVERY GUIDE
-                </Text>
-              </View>
+          {/* Logo — sized to match title height */}
+          {page.practice_logo_url ? (
+            <Image src={page.practice_logo_url} style={s.logo} />
+          ) : (
+            <View style={s.logoPlaceholder}>
+              <Text style={s.logoInitials}>{initials}</Text>
             </View>
+          )}
 
-            {/* Title block */}
+          {/* Center: practice label on top, big title below */}
+          <View style={s.headerCenter}>
+            <Text style={s.practiceName}>{page.practice_name}</Text>
+            <Text style={s.surgeryLabel}>
+              {page.surgery_type.toUpperCase()} · RECOVERY GUIDE
+            </Text>
             <Text style={s.pageTitleSmall}>{"Your Doctor's"}</Text>
             <Text style={s.pageTitleLarge}>Recommendations</Text>
             <Text style={s.doctorName}>Recommended by {doctorName}</Text>
@@ -270,12 +264,10 @@ export function RecoverWellDocument({
             {/* Checkbox for patient to tick off */}
             <View style={s.checkbox} />
 
-            {/* Product image */}
+            {/* Product image — omit entirely if null rather than showing an empty box */}
             {product.image_url ? (
               <Image src={product.image_url} style={s.productImg} />
-            ) : (
-              <View style={s.productImgPlaceholder} />
-            )}
+            ) : null}
 
             {/* Content */}
             <View style={s.productContent}>

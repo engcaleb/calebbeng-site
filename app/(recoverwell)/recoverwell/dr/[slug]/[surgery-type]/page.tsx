@@ -42,12 +42,12 @@ export default async function PatientPage({ params }: { params: Params }) {
               <Image
                 src={practice.logo_url}
                 alt={`${practice.name} logo`}
-                width={80}
-                height={80}
-                className="rounded-lg object-contain"
+                width={96}
+                height={96}
+                className="rounded-xl object-contain"
               />
             ) : (
-              <div className="flex h-20 w-20 items-center justify-center rounded-lg bg-[#1c1a17]/6">
+              <div className="flex h-24 w-24 items-center justify-center rounded-xl bg-[#1c1a17]/6">
                 <span className="font-mono text-[10px] uppercase tracking-wider text-[#1c1a17]/35">
                   {practice.name.slice(0, 2)}
                 </span>
@@ -128,9 +128,9 @@ function ProductCard({
 }) {
   return (
     <div className="flex gap-4 rounded-[9px] border border-[#1c1a17]/8 bg-white p-4 sm:p-5">
-      {/* Image */}
-      <div className="shrink-0">
-        {product.image_url ? (
+      {/* Image — omit entirely if null rather than showing an empty box */}
+      {product.image_url && (
+        <div className="shrink-0">
           <Image
             src={product.image_url}
             alt={product.name}
@@ -138,12 +138,8 @@ function ProductCard({
             height={80}
             className="rounded-[7px] object-contain"
           />
-        ) : (
-          <div className="flex h-20 w-20 items-center justify-center rounded-[7px] bg-[#1c1a17]/4">
-            <span className="text-xl opacity-20">⬜</span>
-          </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Content */}
       <div className="flex min-w-0 flex-1 flex-col gap-2">
