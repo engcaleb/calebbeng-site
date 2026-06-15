@@ -200,6 +200,13 @@ export function PageEditor({
         >
           {isSavePending ? "Saving…" : "Save"}
         </button>
+        <a
+          href={`/recoverwell/portal/pages/${page.id}/pdf`}
+          download
+          className="btn-ghost"
+        >
+          Download PDF
+        </a>
         {saveStatus === "saved" && (
           <span className="font-mono text-[12px] text-green-600">Saved</span>
         )}

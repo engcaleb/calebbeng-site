@@ -72,6 +72,13 @@ export default async function PortalPage() {
                   >
                     {page.is_published ? "Published" : "Draft"}
                   </span>
+                  <a
+                    href={`/recoverwell/portal/pages/${page.id}/pdf`}
+                    download
+                    className="font-mono text-[12px] text-[#1c1a17]/50 underline underline-offset-2 hover:text-[#1c1a17]"
+                  >
+                    PDF
+                  </a>
                   <Link
                     href={`/recoverwell/portal/pages/${page.id}/edit`}
                     className="font-mono text-[12px] text-[#1c1a17]/50 underline underline-offset-2 hover:text-[#1c1a17]"
