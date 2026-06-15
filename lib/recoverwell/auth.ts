@@ -3,6 +3,19 @@ import { cache } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
+const ADMIN_EMAILS = ["calebeng21@gmail.com"];
+
+export const requireAdmin = cache(async (): Promise<void> => {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user || !ADMIN_EMAILS.includes(user.email ?? "")) {
+    redirect("/recoverwell/portal/login");
+  }
+});
+
 export type DoctorWithPractice = {
   id: string;
   name: string;

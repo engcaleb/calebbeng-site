@@ -1,10 +1,12 @@
 "use server";
 
 import { createServiceClient } from "@/lib/supabase/service";
+import { requireAdmin } from "@/lib/recoverwell/auth";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 export async function upsertProduct(formData: FormData) {
+  await requireAdmin();
   const supabase = createServiceClient();
 
   const id = formData.get("id") as string | null;
@@ -36,6 +38,7 @@ export async function upsertProduct(formData: FormData) {
 }
 
 export async function toggleProductActive(formData: FormData) {
+  await requireAdmin();
   const supabase = createServiceClient();
   const id = formData.get("id") as string;
   const current = formData.get("is_active") === "true";

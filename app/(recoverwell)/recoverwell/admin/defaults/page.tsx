@@ -1,3 +1,4 @@
+import { requireAdmin } from "@/lib/recoverwell/auth";
 import { getActiveProducts } from "@/lib/recoverwell/products";
 import { createServiceClient } from "@/lib/supabase/service";
 import { SURGERY_TYPES } from "@/lib/recoverwell/portal-pages";
@@ -7,6 +8,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = { title: "Default Products — Admin" };
 
 export default async function AdminDefaultsPage() {
+  await requireAdmin();
   const supabase = createServiceClient();
   const [products, { data: defaults }] = await Promise.all([
     getActiveProducts(),

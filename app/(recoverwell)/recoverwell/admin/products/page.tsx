@@ -1,3 +1,4 @@
+import { requireAdmin } from "@/lib/recoverwell/auth";
 import { getProducts, getProductById } from "@/lib/recoverwell/products";
 import { toggleProductActive } from "./actions";
 import { ProductForm } from "./ProductForm";
@@ -10,6 +11,7 @@ export default async function AdminProductsPage({
   searchParams: Promise<{ edit?: string }>;
 }) {
   const { edit } = await searchParams;
+  await requireAdmin();
   const [products, editProduct] = await Promise.all([
     getProducts(),
     edit ? getProductById(edit) : Promise.resolve(null),

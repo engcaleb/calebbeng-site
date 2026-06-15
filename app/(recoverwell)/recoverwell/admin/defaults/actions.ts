@@ -1,9 +1,11 @@
 "use server";
 
 import { createServiceClient } from "@/lib/supabase/service";
+import { requireAdmin } from "@/lib/recoverwell/auth";
 import { revalidatePath } from "next/cache";
 
 export async function saveDefaults(formData: FormData) {
+  await requireAdmin();
   const surgeryType = formData.get("surgeryType") as string;
   const productIds = formData.getAll("productId") as string[];
 
