@@ -16,12 +16,19 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   };
 }
 
+const HONORIFICS = new Set(['dr.', 'mr.', 'ms.', 'mrs.']);
+
+function doctorInitials(name: string): string {
+  const words = name.split(' ').filter(w => !HONORIFICS.has(w.toLowerCase()));
+  return words.slice(0, 2).map(w => w[0]?.toUpperCase() ?? '').join('');
+}
+
 export default async function PatientPage({ params }: { params: Params }) {
   const { slug, "surgery-type": surgerySegment } = await params;
   const page = await getPublishedPage(slug, surgerySegment);
   if (!page) notFound();
 
-  const { practice, surgery_type, products } = page;
+  const { practice, surgery_type, doctor_name, products } = page;
 
   // Group products by category to render section headers
   const grouped = products.reduce<Record<string, typeof products>>((acc, p) => {
@@ -56,20 +63,28 @@ export default async function PatientPage({ params }: { params: Params }) {
               <p className="text-[15px] font-semibold text-[#1c1a17]">
                 {practice.name}
               </p>
-              <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#1c1a17]/40">
+              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#1c1a17]/38">
                 {surgery_type} · Recovery Guide
               </p>
             </div>
           </div>
 
-          {/* Title */}
+          {/* Title + doctor attribution */}
           <div className="mt-6 border-t border-[#1c1a17]/8 pt-6">
             <h1 className="text-2xl font-medium tracking-tight text-[#1c1a17] sm:text-3xl">
-              Your Doctor&apos;s Recommendations
+              Your {surgery_type} Recovery Guide
             </h1>
-            <p className="mt-2 text-[14px] text-[#1c1a17]/50">
-              A short list. Use what you need, skip what you don&apos;t.
-            </p>
+            <div className="mt-2 flex items-center gap-2">
+              <div className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full bg-[#d4e4f7]">
+                <span className="text-[10px] font-bold text-[#2c5282]">
+                  {doctorInitials(doctor_name)}
+                </span>
+              </div>
+              <p className="text-[12px] text-[#1c1a17]/50">
+                Recommended by{" "}
+                <span className="font-semibold text-[#1c1a17]">{doctor_name}</span>
+              </p>
+            </div>
           </div>
         </div>
       </header>
