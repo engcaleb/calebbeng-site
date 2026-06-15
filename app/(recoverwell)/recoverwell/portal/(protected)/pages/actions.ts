@@ -101,3 +101,26 @@ export async function togglePublish(
   );
   revalidatePath("/recoverwell/portal");
 }
+
+// Called from PageEditor client component via useTransition
+export async function toggleShowDoctor(
+  pageId: string,
+  practiceSlug: string,
+  surgeryType: string,
+  currentShowDoctor: boolean
+) {
+  const doctor = await requireDoctor();
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from("rw_recommendation_pages")
+    .update({ show_doctor: !currentShowDoctor })
+    .eq("id", pageId)
+    .eq("doctor_id", doctor.id);
+
+  if (error) throw new Error("Failed to update show_doctor");
+
+  revalidatePath(
+    `/recoverwell/dr/${practiceSlug}/${surgeryTypeToUrlSegment(surgeryType)}`
+  );
+}
