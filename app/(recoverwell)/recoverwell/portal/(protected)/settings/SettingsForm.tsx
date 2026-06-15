@@ -73,28 +73,41 @@ export function SettingsForm({ doctor }: { doctor: DoctorWithPractice }) {
       {/* Practice Logo */}
       <div>
         <p className="label mb-3">Practice Logo</p>
-        <div className="flex items-center gap-4">
+        {/* logo_url is injected into FormData via handleSave — no name attribute needed */}
+        <div className="flex items-center gap-5">
           {logoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={logoUrl}
               alt="Practice logo"
-              className="h-16 w-16 rounded-lg border border-[#e8e3da] object-cover"
+              className="h-28 w-28 rounded-xl border border-[#e8e3da] object-contain"
             />
           ) : (
-            <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-[#1c1a17]/6 font-mono text-sm text-[#1c1a17]/40">
+            <div className="flex h-28 w-28 items-center justify-center rounded-xl bg-[#1c1a17]/6 font-mono text-base text-[#1c1a17]/40">
               {initials}
             </div>
           )}
-          <div>
+          <div className="flex flex-col gap-2">
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={isUploading}
               className="btn-ghost disabled:opacity-50"
             >
-              {isUploading ? "Uploading…" : "Choose file"}
+              {isUploading ? "Uploading…" : logoUrl ? "Replace" : "Choose file"}
             </button>
+            {logoUrl && (
+              <button
+                type="button"
+                onClick={() => {
+                  setLogoUrl("");
+                  setSaveStatus("idle");
+                }}
+                className="text-left font-mono text-[12px] text-red-500 hover:text-red-700"
+              >
+                Remove logo
+              </button>
+            )}
             <input
               ref={fileInputRef}
               type="file"
@@ -103,27 +116,9 @@ export function SettingsForm({ doctor }: { doctor: DoctorWithPractice }) {
               onChange={handleFileChange}
             />
             {uploadError && (
-              <p className="mt-1 font-mono text-[11px] text-red-500">
-                {uploadError}
-              </p>
+              <p className="font-mono text-[11px] text-red-500">{uploadError}</p>
             )}
           </div>
-        </div>
-        {/* logo_url is injected into FormData via handleSave — no name attribute needed */}
-        <div className="mt-3 flex items-center gap-2">
-          <span className="shrink-0 font-mono text-[11px] text-[#1c1a17]/35">
-            or paste URL
-          </span>
-          <input
-            type="url"
-            value={logoUrl}
-            onChange={(e) => {
-              setLogoUrl(e.target.value);
-              setSaveStatus("idle");
-            }}
-            placeholder="https://…"
-            className="input flex-1 font-mono text-[13px]"
-          />
         </div>
       </div>
 
