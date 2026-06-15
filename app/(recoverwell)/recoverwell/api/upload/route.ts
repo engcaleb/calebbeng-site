@@ -14,7 +14,6 @@ function extFromMime(mime: string): string {
     "image/png": "png",
     "image/webp": "webp",
     "image/gif": "gif",
-    "image/svg+xml": "svg",
   };
   return map[mime] ?? "jpg";
 }
@@ -42,6 +41,12 @@ export async function POST(req: Request) {
     }
     if (!(ALLOWED_BUCKETS as readonly string[]).includes(bucket)) {
       return NextResponse.json({ error: "Invalid bucket" }, { status: 400 });
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      return NextResponse.json(
+        { error: "Image must be under 5MB" },
+        { status: 400 }
+      );
     }
 
     const ext = extFromMime(file.type);

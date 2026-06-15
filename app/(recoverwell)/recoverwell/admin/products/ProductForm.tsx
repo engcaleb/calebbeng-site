@@ -44,6 +44,10 @@ export function ProductForm({ product }: { product?: RwProduct }) {
   ) {
     const file = e.target.files?.[0];
     if (!file || !product?.id) return;
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError("Image must be under 5MB");
+      return;
+    }
     setIsUploading(true);
     setUploadError(null);
     try {

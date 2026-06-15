@@ -20,6 +20,10 @@ export function SettingsForm({ doctor }: { doctor: DoctorWithPractice }) {
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError("Image must be under 5MB");
+      return;
+    }
     setIsUploading(true);
     setUploadError(null);
     try {
