@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useMemo, useTransition } from "react";
 import Link from "next/link";
 import { savePageProducts, togglePublish, toggleShowDoctor } from "../../actions";
 import type { PageForEditor } from "@/lib/recoverwell/portal-pages";
@@ -42,11 +42,18 @@ export function PageEditor({
   const [isShowDoctorPending, startShowDoctorTransition] = useTransition();
 
   // Fast lookup: product ID → full product details
-  const productById = new Map(allProducts.map((p) => [p.id, p]));
+  const productById = useMemo(
+    () => new Map(allProducts.map((p) => [p.id, p])),
+    [allProducts]
+  );
 
   // Ordered list of selected entries (by sort_order, matching DB order on load)
-  const selectedEntries = Array.from(selected.entries()).sort(
-    ([, a], [, b]) => a.sort_order - b.sort_order
+  const selectedEntries = useMemo(
+    () =>
+      Array.from(selected.entries()).sort(
+        ([, a], [, b]) => a.sort_order - b.sort_order
+      ),
+    [selected]
   );
 
   function toggleProduct(productId: string) {
