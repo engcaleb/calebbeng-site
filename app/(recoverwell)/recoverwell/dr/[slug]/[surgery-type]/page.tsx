@@ -42,12 +42,12 @@ export default async function PatientPage({ params }: { params: Params }) {
               <Image
                 src={practice.logo_url}
                 alt={`${practice.name} logo`}
-                width={56}
-                height={56}
-                className="rounded object-contain"
+                width={80}
+                height={80}
+                className="rounded-lg object-contain"
               />
             ) : (
-              <div className="flex h-14 w-14 items-center justify-center rounded bg-[#1c1a17]/6">
+              <div className="flex h-20 w-20 items-center justify-center rounded-lg bg-[#1c1a17]/6">
                 <span className="font-mono text-[10px] uppercase tracking-wider text-[#1c1a17]/35">
                   {practice.name.slice(0, 2)}
                 </span>

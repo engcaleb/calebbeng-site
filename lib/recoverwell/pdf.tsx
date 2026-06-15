@@ -34,40 +34,41 @@ const s = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    marginBottom: 10,
+    marginBottom: 12,
   },
   headerLeft: {
     flex: 1,
   },
   headerLogoRow: {
     flexDirection: "row",
-    alignItems: "flex-start",
+    alignItems: "center",
     marginBottom: 10,
   },
   logo: {
-    width: 40,
-    height: 40,
-    borderRadius: 4,
-    marginRight: 10,
+    width: 56,
+    height: 56,
+    borderRadius: 6,
+    marginRight: 12,
   },
   logoPlaceholder: {
-    width: 40,
-    height: 40,
+    width: 56,
+    height: 56,
     backgroundColor: C.logoBg,
-    borderRadius: 4,
-    marginRight: 10,
+    borderRadius: 6,
+    marginRight: 12,
     justifyContent: "center",
     alignItems: "center",
   },
   logoInitials: {
-    fontSize: 9,
+    fontSize: 12,
     color: C.muted,
     letterSpacing: 1,
+    fontFamily: "Helvetica-Bold",
   },
   practiceName: {
-    fontSize: 12,
+    fontSize: 13,
     fontFamily: "Helvetica-Bold",
-    marginBottom: 2,
+    marginBottom: 3,
     color: C.text,
   },
   surgeryLabel: {
@@ -75,21 +76,27 @@ const s = StyleSheet.create({
     color: C.muted,
     letterSpacing: 1.5,
   },
-  pageTitle: {
-    fontSize: 20,
+  pageTitleSmall: {
+    fontSize: 18,
     fontFamily: "Helvetica-Bold",
-    marginBottom: 3,
-    marginTop: 4,
     color: C.text,
+    lineHeight: 1.1,
+  },
+  pageTitleLarge: {
+    fontSize: 26,
+    fontFamily: "Helvetica-Bold",
+    color: C.text,
+    lineHeight: 1.1,
+    marginBottom: 4,
   },
   doctorName: {
-    fontSize: 10,
+    fontSize: 9,
     color: C.muted,
-    marginBottom: 10,
   },
   headerRight: {
     alignItems: "center",
-    marginLeft: 16,
+    marginLeft: 20,
+    paddingTop: 4,
   },
   qr: {
     width: 72,
@@ -105,23 +112,49 @@ const s = StyleSheet.create({
   divider: {
     borderBottomWidth: 1,
     borderBottomColor: C.border,
-    marginBottom: 12,
+    marginBottom: 10,
+  },
+  // ── Section header ───────────────────────────────────────────
+  sectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  sectionTitle: {
+    fontSize: 10,
+    fontFamily: "Helvetica-Bold",
+    color: C.text,
+  },
+  sectionCount: {
+    fontSize: 8,
+    color: C.muted,
+    letterSpacing: 1,
   },
   // ── Product cards ────────────────────────────────────────────
   card: {
     flexDirection: "row",
+    alignItems: "center",
     backgroundColor: C.card,
     borderWidth: 1,
     borderColor: C.border,
     borderRadius: 6,
     padding: 8,
-    marginBottom: 8,
+    marginBottom: 6,
+    gap: 8,
+  },
+  checkbox: {
+    width: 14,
+    height: 14,
+    borderWidth: 1.5,
+    borderColor: C.border,
+    borderRadius: 3,
+    flexShrink: 0,
   },
   productImg: {
     width: 56,
     height: 56,
     borderRadius: 4,
-    marginRight: 10,
     flexShrink: 0,
   },
   productImgPlaceholder: {
@@ -129,7 +162,6 @@ const s = StyleSheet.create({
     height: 56,
     backgroundColor: C.placeholder,
     borderRadius: 4,
-    marginRight: 10,
     flexShrink: 0,
   },
   productContent: {
@@ -148,7 +180,7 @@ const s = StyleSheet.create({
     color: C.text,
   },
   productInstructions: {
-    fontSize: 9,
+    fontSize: 8.5,
     color: C.muted,
     lineHeight: 1.5,
   },
@@ -176,7 +208,7 @@ const s = StyleSheet.create({
 export type RecoverWellDocumentProps = {
   page: PageForPdf;
   doctorName: string;
-  qrDataUrl: string; // single QR linking to the doctor's recommendation page
+  qrDataUrl: string; // single QR linking to the doctor's patient page
 };
 
 export function RecoverWellDocument({
@@ -192,6 +224,7 @@ export function RecoverWellDocument({
         {/* ── Header ── */}
         <View style={s.header}>
           <View style={s.headerLeft}>
+            {/* Practice identity row */}
             <View style={s.headerLogoRow}>
               {page.practice_logo_url ? (
                 <Image src={page.practice_logo_url} style={s.logo} />
@@ -207,9 +240,14 @@ export function RecoverWellDocument({
                 </Text>
               </View>
             </View>
-            <Text style={s.pageTitle}>Your Doctor's Recommendations</Text>
-            <Text style={s.doctorName}>{doctorName}</Text>
+
+            {/* Title block */}
+            <Text style={s.pageTitleSmall}>{"Your Doctor's"}</Text>
+            <Text style={s.pageTitleLarge}>Recommendations</Text>
+            <Text style={s.doctorName}>Recommended by {doctorName}</Text>
           </View>
+
+          {/* Right: single QR */}
           <View style={s.headerRight}>
             <Image src={qrDataUrl} style={s.qr} />
             <Text style={s.qrLabel}>Scan to view{"\n"}on your phone</Text>
@@ -218,14 +256,28 @@ export function RecoverWellDocument({
 
         <View style={s.divider} />
 
+        {/* ── Section header ── */}
+        <View style={s.sectionHeader}>
+          <Text style={s.sectionTitle}>Recommended Products</Text>
+          <Text style={s.sectionCount}>
+            {page.products.length.toString().padStart(2, "0")} ITEMS
+          </Text>
+        </View>
+
         {/* ── Product cards ── */}
         {page.products.map((product) => (
           <View key={product.slug} style={s.card} wrap={false}>
+            {/* Checkbox for patient to tick off */}
+            <View style={s.checkbox} />
+
+            {/* Product image */}
             {product.image_url ? (
               <Image src={product.image_url} style={s.productImg} />
             ) : (
               <View style={s.productImgPlaceholder} />
             )}
+
+            {/* Content */}
             <View style={s.productContent}>
               <Text style={s.productCategory}>
                 {product.category.toUpperCase()}
