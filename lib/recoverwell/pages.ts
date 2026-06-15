@@ -24,6 +24,7 @@ export type PublishedPage = {
   surgery_type: string;
   practice: Practice;
   doctor_name: string;
+  show_doctor: boolean;
   products: PageProduct[];
 };
 
@@ -84,7 +85,7 @@ export async function getPublishedPage(
   // 3 — published recommendation page
   const { data: page, error: pageErr } = await supabase
     .from("rw_recommendation_pages")
-    .select("id, doctor_id, surgery_type")
+    .select("id, doctor_id, surgery_type, show_doctor")
     .in("doctor_id", doctorIds)
     .eq("surgery_type", surgeryType)
     .eq("is_published", true)
@@ -134,6 +135,7 @@ export async function getPublishedPage(
     surgery_type: page.surgery_type,
     practice,
     doctor_name: doctor.name,
+    show_doctor: page.show_doctor,
     products,
   };
 }

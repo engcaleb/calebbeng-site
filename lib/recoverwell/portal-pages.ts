@@ -26,6 +26,7 @@ export type PageForEditor = {
   surgery_type: string;
   is_published: boolean;
   doctor_id: string;
+  show_doctor: boolean;
   page_products: PageProductForEditor[];
 };
 
@@ -70,7 +71,7 @@ export async function getPageForEditor(
   const supabase = await createClient();
   const { data: page, error } = await supabase
     .from("rw_recommendation_pages")
-    .select("id, surgery_type, is_published, doctor_id")
+    .select("id, surgery_type, is_published, doctor_id, show_doctor")
     .eq("id", pageId)
     .eq("doctor_id", doctorId)
     .single();
