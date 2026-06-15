@@ -41,12 +41,13 @@ export function PageEditor({
   const [isPublishPending, startPublishTransition] = useTransition();
   const [isShowDoctorPending, startShowDoctorTransition] = useTransition();
 
-  // Group active products by category (preserving sort order from DB)
-  const grouped = allProducts.reduce<Record<string, RwProduct[]>>((acc, p) => {
-    if (!acc[p.category]) acc[p.category] = [];
-    acc[p.category].push(p);
-    return acc;
-  }, {});
+  // Fast lookup: product ID → full product details
+  const productById = new Map(allProducts.map((p) => [p.id, p]));
+
+  // Ordered list of selected entries (by sort_order, matching DB order on load)
+  const selectedEntries = Array.from(selected.entries()).sort(
+    ([, a], [, b]) => a.sort_order - b.sort_order
+  );
 
   function toggleProduct(productId: string) {
     setSelected((prev) => {
@@ -168,53 +169,51 @@ export function PageEditor({
         </div>
       </div>
 
-      {/* ── Product list ────────────────────────────────────── */}
-      <div className="space-y-8">
-        {Object.entries(grouped).map(([category, products]) => (
-          <div key={category}>
-            <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.25em] text-[#1c1a17]/35">
-              {category}
-            </p>
-            <div className="space-y-2">
-              {products.map((product) => {
-                const state = selected.get(product.id);
-                const isChecked = !!state;
-                return (
-                  <div
-                    key={product.id}
-                    className="overflow-hidden rounded-lg border border-[#e8e3da] bg-white"
-                  >
-                    {/* Checkbox row */}
-                    <label className="flex cursor-pointer items-center gap-3 px-4 py-3">
-                      <input
-                        type="checkbox"
-                        checked={isChecked}
-                        onChange={() => toggleProduct(product.id)}
-                        className="h-4 w-4 accent-[#1c1a17]"
-                      />
-                      <span className="text-[14px] font-medium text-[#1c1a17]">
-                        {product.name}
-                      </span>
-                    </label>
-
-                    {/* Instructions panel — only when checked */}
-                    {isChecked && (
-                      <div className="border-t border-[#e8e3da] bg-[#faf9f7] px-4 pb-4 pt-3">
-                        <InstructionsPanel
-                          defaultInstructions={product.default_instructions}
-                          customInstructions={state.custom_instructions}
-                          onChange={(value) =>
-                            setInstructions(product.id, value)
-                          }
-                        />
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+      {/* ── Selected products ─────────────────────────────── */}
+      <div className="space-y-2">
+        {selectedEntries.map(([productId, state]) => {
+          const product = productById.get(productId);
+          if (!product) return null;
+          return (
+            <div
+              key={productId}
+              className="overflow-hidden rounded-lg border border-[#e8e3da] bg-white"
+            >
+              {/* Header row */}
+              <div className="flex items-center gap-3 px-4 py-3">
+                <div className="flex-1 min-w-0">
+                  <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#1c1a17]/35">
+                    {product.category}
+                  </p>
+                  <p className="text-[14px] font-medium text-[#1c1a17]">
+                    {product.name}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => toggleProduct(productId)}
+                  className="shrink-0 font-mono text-[13px] text-[#1c1a17]/25 hover:text-red-500 transition"
+                  aria-label={`Remove ${product.name}`}
+                >
+                  ✕
+                </button>
+              </div>
+              {/* Instructions — always expanded */}
+              <div className="border-t border-[#e8e3da] bg-[#faf9f7] px-4 pb-4 pt-3">
+                <InstructionsPanel
+                  defaultInstructions={product.default_instructions}
+                  customInstructions={state.custom_instructions}
+                  onChange={(value) => setInstructions(productId, value)}
+                />
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
+        {selectedEntries.length === 0 && (
+          <p className="py-8 text-center font-mono text-[12px] text-[#1c1a17]/30">
+            No products yet — search below to add some.
+          </p>
+        )}
       </div>
 
       {/* ── Save bar ────────────────────────────────────────── */}
