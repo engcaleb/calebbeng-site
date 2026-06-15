@@ -34,6 +34,35 @@ export function ProductForm({ product }: { product?: RwProduct }) {
   const [slugEdited, setSlugEdited] = useState(isEdit);
   const [isPending, startTransition] = useTransition();
   const formRef = useRef<HTMLFormElement>(null);
+  const imageFileInputRef = useRef<HTMLInputElement>(null);
+  const [imageUrl, setImageUrl] = useState(product?.image_url ?? "");
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
+  async function handleImageFileChange(
+    e: React.ChangeEvent<HTMLInputElement>
+  ) {
+    const file = e.target.files?.[0];
+    if (!file || !product?.id) return;
+    setIsUploading(true);
+    setUploadError(null);
+    try {
+      const body = new FormData();
+      body.append("file", file);
+      body.append("bucket", "product-images");
+      body.append("id", product.id);
+      const res = await fetch("/api/upload", { method: "POST", body });
+      const json = await res.json();
+      if (!res.ok || json.error) throw new Error(json.error ?? "Upload failed");
+      setImageUrl(json.url);
+    } catch (err) {
+      setUploadError(
+        err instanceof Error ? err.message : "Upload failed — try again"
+      );
+    } finally {
+      setIsUploading(false);
+    }
+  }
 
   function handleNameChange(value: string) {
     setName(value);
@@ -135,17 +164,54 @@ export function ProductForm({ product }: { product?: RwProduct }) {
           />
         </div>
 
-        {/* Image URL */}
+        {/* Product Image */}
         <div className="flex flex-col gap-1 sm:col-span-2">
-          <label className="label" htmlFor="image_url">Image URL</label>
-          <input
-            id="image_url"
-            name="image_url"
-            type="url"
-            defaultValue={product?.image_url ?? ""}
-            className="input font-mono text-[13px]"
-            placeholder="https://..."
-          />
+          <label className="label" htmlFor="image_url">Product Image</label>
+          <div className="flex items-center gap-2">
+            {isEdit ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => imageFileInputRef.current?.click()}
+                  disabled={isUploading}
+                  className="btn-ghost shrink-0 disabled:opacity-50"
+                >
+                  {isUploading ? "Uploading…" : "Choose file"}
+                </button>
+                <input
+                  ref={imageFileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageFileChange}
+                />
+                <span className="shrink-0 font-mono text-[11px] text-[#1c1a17]/35">
+                  or
+                </span>
+              </>
+            ) : (
+              <span className="shrink-0 font-mono text-[11px] text-[#1c1a17]/35">
+                Save first to upload ·
+              </span>
+            )}
+            <input
+              id="image_url"
+              name="image_url"
+              type="url"
+              value={imageUrl}
+              onChange={(e) => {
+                setImageUrl(e.target.value);
+                setUploadError(null);
+              }}
+              placeholder="https://…"
+              className="input flex-1 font-mono text-[13px]"
+            />
+          </div>
+          {uploadError && (
+            <p className="mt-1 font-mono text-[11px] text-red-500">
+              {uploadError}
+            </p>
+          )}
         </div>
 
         {/* Default Instructions */}
