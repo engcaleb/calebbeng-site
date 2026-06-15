@@ -37,28 +37,26 @@ export async function registerAction(formData: FormData) {
   const passwordError = validatePassword(password);
   if (passwordError) errorRedirect(passwordError);
 
-  const supabase = await createClient();
+  const service = createServiceClient();
 
-  const { data: authData, error: authError } = await supabase.auth.signUp({
+  // Create user via admin API — auto-confirms without sending any email,
+  // bypassing Supabase's email confirmation rate limit entirely.
+  const { data: authData, error: authError } = await service.auth.admin.createUser({
     email,
     password,
+    email_confirm: true,
   });
 
   if (authError) {
-    const msg = authError.message.toLowerCase().includes("already registered")
+    const msg = authError.message.toLowerCase().includes("already been registered")
       ? "An account with that email already exists."
       : authError.message;
     errorRedirect(msg);
   }
 
   if (!authData.user) {
-    errorRedirect(
-      "Account created — check your email to confirm before signing in."
-    );
+    errorRedirect("Failed to create account. Please try again.");
   }
-
-  // Use service role so RLS doesn't block practice/doctor inserts
-  const service = createServiceClient();
 
   // Generate unique slug
   const baseSlug = slugify(practiceName) || "practice";
@@ -92,6 +90,18 @@ export async function registerAction(formData: FormData) {
 
   if (doctorError) {
     errorRedirect("Failed to set up your account. Please try again.");
+  }
+
+  // Sign the new user in — admin.createUser doesn't set a session cookie
+  const supabase = await createClient();
+  const { error: signInError } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  if (signInError) {
+    // Account created successfully — just couldn't auto-sign in
+    redirect("/recoverwell/portal/login");
   }
 
   redirect("/recoverwell/portal");
