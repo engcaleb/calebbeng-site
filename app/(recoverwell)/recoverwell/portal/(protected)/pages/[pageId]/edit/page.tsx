@@ -7,7 +7,7 @@ import { PageEditor } from "./PageEditor";
 type Params = Promise<{ pageId: string }>;
 
 export async function generateMetadata({ params }: { params: Params }) {
-  const { pageId } = await params;
+  await params;
   return { title: `Edit Page — Portal` };
 }
 
