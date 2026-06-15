@@ -45,6 +45,18 @@ export function urlToSurgeryType(segment: string): string {
   );
 }
 
+// DB value ("LASIK", "Cataract", …) → URL segment (e.g. "lasik", "cataract", "dry-eye")
+export function surgeryTypeToUrlSegment(surgeryType: string): string {
+  const map: Record<string, string> = {
+    LASIK: "lasik",
+    Cataract: "cataract",
+    "Dry Eye": "dry-eye",
+    Retinal: "retinal",
+    Corneal: "corneal",
+  };
+  return map[surgeryType] ?? surgeryType.toLowerCase().replace(/\s+/g, "-");
+}
+
 export async function getPublishedPage(
   practiceSlug: string,
   surgeryTypeSegment: string
