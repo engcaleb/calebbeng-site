@@ -93,11 +93,11 @@ export default async function PatientPage({ params }: { params: Params }) {
       {/* ── PRODUCT CARDS ──────────────────────────────────────── */}
       <main className="mx-auto max-w-2xl px-6 py-8">
         {Object.entries(grouped).map(([category, items]) => (
-          <section key={category} className="mb-8">
-            <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.28em] text-[#1c1a17]/38">
+          <section key={category} className="mb-5">
+            <p className="mb-3 font-mono text-[9px] uppercase tracking-[0.28em] text-[#1c1a17]/35">
               {category}
             </p>
-            <div className="space-y-3">
+            <div className="space-y-2">
               {items.map((product) => (
                 <ProductCard key={product.page_product_id} product={product} />
               ))}
@@ -139,20 +139,20 @@ function ProductCard({
   };
 }) {
   return (
-    <div className="flex gap-4 rounded-lg border border-[#1c1a17]/8 bg-white p-4 sm:p-5">
+    <div className="flex gap-4 rounded-[9px] border border-[#1c1a17]/8 bg-white p-4 sm:p-5">
       {/* Image */}
       <div className="shrink-0">
         {product.image_url ? (
           <Image
             src={product.image_url}
             alt={product.name}
-            width={72}
-            height={72}
-            className="rounded object-contain"
+            width={64}
+            height={64}
+            className="rounded-[7px] object-contain"
           />
         ) : (
-          <div className="flex h-[72px] w-[72px] items-center justify-center rounded bg-[#1c1a17]/4">
-            <span className="text-2xl opacity-20">⬜</span>
+          <div className="flex h-16 w-16 items-center justify-center rounded-[7px] bg-[#1c1a17]/4">
+            <span className="text-xl opacity-20">⬜</span>
           </div>
         )}
       </div>
@@ -160,16 +160,16 @@ function ProductCard({
       {/* Content */}
       <div className="flex min-w-0 flex-1 flex-col gap-2">
         <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#1c1a17]/35">
+          <p className="font-mono text-[9px] uppercase tracking-[0.22em] text-[#1c1a17]/28">
             {product.category}
           </p>
-          <p className="mt-0.5 text-[15px] font-semibold leading-snug text-[#1c1a17]">
+          <p className="mt-0.5 text-[14px] font-semibold leading-snug text-[#1c1a17]">
             {product.name}
           </p>
         </div>
 
         {product.instructions && (
-          <p className="text-[13px] leading-[1.7] text-[#1c1a17]/60">
+          <p className="text-[11.5px] leading-[1.65] text-[#1c1a17]/55">
             {product.instructions}
           </p>
         )}
@@ -179,7 +179,7 @@ function ProductCard({
           {product.buy_url ? (
             <Link
               href={`/recoverwell/products/${product.slug}`}
-              className="inline-flex items-center gap-1.5 rounded bg-[#1c1a17] px-3.5 py-1.5 text-[12px] font-medium text-[#f9f7f4] transition hover:bg-[#1c1a17]/80"
+              className="inline-flex items-center gap-1.5 rounded-[5px] bg-[#1c1a17] px-3.5 py-1.5 text-[11px] font-medium text-[#f9f7f4] transition hover:bg-[#1c1a17]/80"
             >
               Buy Now
               <span aria-hidden="true">→</span>
