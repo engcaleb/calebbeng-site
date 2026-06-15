@@ -5,11 +5,14 @@ import { redirect } from "next/navigation";
 import { requireDoctor } from "@/lib/recoverwell/auth";
 import { createClient } from "@/lib/supabase/server";
 import { surgeryTypeToUrlSegment } from "@/lib/recoverwell/pages";
+import { SURGERY_TYPES } from "@/lib/recoverwell/portal-pages";
 
 // Called from a <form action={createPage}> — receives FormData
 export async function createPage(formData: FormData) {
   const surgeryType = formData.get("surgeryType") as string;
   if (!surgeryType) throw new Error("Missing surgeryType");
+  if (!(SURGERY_TYPES as readonly string[]).includes(surgeryType))
+    throw new Error("Invalid surgery type");
 
   const doctor = await requireDoctor();
   const supabase = await createClient();
@@ -50,8 +53,12 @@ export async function savePageProducts(
     .single();
   if (!page) throw new Error("Page not found");
 
-  // Replace all page products atomically
-  await supabase.from("rw_page_products").delete().eq("page_id", pageId);
+  // Delete existing products — check error before proceeding to insert
+  const { error: deleteError } = await supabase
+    .from("rw_page_products")
+    .delete()
+    .eq("page_id", pageId);
+  if (deleteError) throw new Error("Failed to clear existing products");
 
   if (products.length > 0) {
     const { error } = await supabase.from("rw_page_products").insert(
@@ -68,6 +75,7 @@ export async function savePageProducts(
   revalidatePath(
     `/recoverwell/dr/${practiceSlug}/${surgeryTypeToUrlSegment(surgeryType)}`
   );
+  revalidatePath("/recoverwell/portal");
 }
 
 // Called from PageEditor client component via useTransition
