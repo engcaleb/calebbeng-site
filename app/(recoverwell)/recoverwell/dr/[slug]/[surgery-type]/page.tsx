@@ -19,6 +19,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
 const HONORIFICS = new Set(['dr.', 'mr.', 'ms.', 'mrs.']);
 
 function doctorInitials(name: string): string {
+  if (!name.trim()) return '?';
   const words = name.split(' ').filter(w => !HONORIFICS.has(w.toLowerCase()));
   return words.slice(0, 2).map(w => w[0]?.toUpperCase() ?? '').join('');
 }
