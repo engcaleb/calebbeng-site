@@ -22,17 +22,17 @@ export async function GET(_req: Request, { params }: Params) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  // Generate all QR codes in parallel
-  const qrEntries = await Promise.all(
-    page.products.map(async (p) => {
-      const url = `https://recoverwell.calebbeng.com/products/${p.slug}`;
-      const dataUrl = await generateQrDataUrl(url);
-      return [p.slug, dataUrl] as const;
-    })
-  );
-  const qrDataUrls = Object.fromEntries(qrEntries);
-
   try {
+    // Generate all QR codes in parallel
+    const qrEntries = await Promise.all(
+      page.products.map(async (p) => {
+        const url = `https://recoverwell.calebbeng.com/products/${p.slug}`;
+        const dataUrl = await generateQrDataUrl(url);
+        return [p.slug, dataUrl] as const;
+      })
+    );
+    const qrDataUrls = Object.fromEntries(qrEntries);
+
     const buffer = await renderToBuffer(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       React.createElement(RecoverWellDocument, {
@@ -42,7 +42,10 @@ export async function GET(_req: Request, { params }: Params) {
       }) as React.ReactElement<any>
     );
 
-    const surgerySlug = page.surgery_type.toLowerCase().replace(/\s+/g, "-");
+    const surgerySlug = page.surgery_type
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
     const filename = `recoverwell-${surgerySlug}-recovery.pdf`;
 
     return new Response(new Uint8Array(buffer), {
