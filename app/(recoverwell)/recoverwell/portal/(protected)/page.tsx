@@ -25,6 +25,9 @@ export default async function PortalPage() {
             <Link href="/recoverwell/portal/pages/new" className="btn-primary">
               New Page
             </Link>
+            <Link href="/recoverwell/portal/settings" className="btn-ghost">
+              Settings
+            </Link>
             <form action={logoutAction}>
               <button type="submit" className="btn-ghost">
                 Sign out
