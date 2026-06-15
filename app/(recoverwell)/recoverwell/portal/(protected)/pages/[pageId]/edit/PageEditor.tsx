@@ -40,6 +40,7 @@ export function PageEditor({
   const [isSavePending, startSaveTransition] = useTransition();
   const [isPublishPending, startPublishTransition] = useTransition();
   const [isShowDoctorPending, startShowDoctorTransition] = useTransition();
+  const [search, setSearch] = useState("");
 
   // Fast lookup: product ID → full product details
   const productById = useMemo(
@@ -54,6 +55,20 @@ export function PageEditor({
         ([, a], [, b]) => a.sort_order - b.sort_order
       ),
     [selected]
+  );
+
+  const query = search.trim().toLowerCase();
+  const searchResults = useMemo(
+    () =>
+      query
+        ? allProducts.filter(
+            (p) =>
+              !selected.has(p.id) &&
+              (p.name.toLowerCase().includes(query) ||
+                p.category.toLowerCase().includes(query))
+          )
+        : [],
+    [query, allProducts, selected]
   );
 
   function toggleProduct(productId: string) {
@@ -223,6 +238,52 @@ export function PageEditor({
         )}
       </div>
 
+      {/* ── Add products ──────────────────────────────────── */}
+      <div className="mt-4">
+        <input
+          type="search"
+          placeholder="Search products to add…"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="input w-full"
+        />
+        {query && (
+          <div className="mt-2 space-y-1">
+            {searchResults.length === 0 ? (
+              <p className="py-4 text-center font-mono text-[12px] text-[#1c1a17]/30">
+                No products found
+              </p>
+            ) : (
+              searchResults.map((product) => (
+                <div
+                  key={product.id}
+                  className="flex items-center gap-3 rounded-lg border border-[#e8e3da] bg-white px-4 py-3"
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#1c1a17]/35">
+                      {product.category}
+                    </p>
+                    <p className="text-[14px] font-medium text-[#1c1a17]">
+                      {product.name}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      toggleProduct(product.id);
+                      setSearch("");
+                    }}
+                    className="shrink-0 font-mono text-[12px] text-[#1c1a17]/50 hover:text-[#1c1a17] transition"
+                  >
+                    + Add
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+      </div>
+
       {/* ── Save bar ────────────────────────────────────────── */}
       <div className="mt-10 flex items-center gap-4 border-t border-[#e8e3da] pt-6">
         <button
@@ -320,23 +381,22 @@ function InstructionsPanel({
         className="input resize-none"
         onChange={(e) => onChange(e.target.value)}
       />
-      {defaultInstructions && (
-        <div className="mt-2 rounded border border-[#e8e3da] bg-white p-2.5">
-          <p className="font-mono text-[10px] uppercase tracking-[0.15em] text-[#1c1a17]/30">
-            Admin default
-          </p>
-          <p className="mt-0.5 text-[12px] text-[#1c1a17]/45">
-            {defaultInstructions}
-          </p>
+      <div className="mt-1.5 flex items-start justify-between gap-4">
+        {defaultInstructions && (
           <button
             type="button"
             onClick={() => onChange(null)}
-            className="mt-1.5 font-mono text-[11px] text-[#1c1a17]/40 underline underline-offset-2 hover:text-[#1c1a17]"
+            className="font-mono text-[11px] text-[#1c1a17]/40 underline underline-offset-2 hover:text-[#1c1a17] transition"
           >
-            Reset to default
+            ↩ Reset to default
           </button>
-        </div>
-      )}
+        )}
+        {defaultInstructions && (
+          <p className="text-right text-[11px] leading-relaxed text-[#1c1a17]/28">
+            Default: {defaultInstructions}
+          </p>
+        )}
+      </div>
     </div>
   );
 }
