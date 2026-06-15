@@ -221,14 +221,10 @@ export function RecoverWellDocument({
       <Page size="A4" style={s.page}>
         {/* ── Header: [logo] [practice info + title] [QR] ── */}
         <View style={s.header}>
-          {/* Logo — sized to match title height */}
+          {/* Logo — only render if a URL exists */}
           {page.practice_logo_url ? (
             <Image src={page.practice_logo_url} style={s.logo} />
-          ) : (
-            <View style={s.logoPlaceholder}>
-              <Text style={s.logoInitials}>{initials}</Text>
-            </View>
-          )}
+          ) : null}
 
           {/* Center: practice label on top, big title below */}
           <View style={s.headerCenter}>

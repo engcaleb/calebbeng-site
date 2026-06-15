@@ -38,7 +38,7 @@ export default async function PatientPage({ params }: { params: Params }) {
         <div className="mx-auto max-w-2xl px-6 py-6">
           {/* Practice identity */}
           <div className="flex items-center gap-4">
-            {practice.logo_url ? (
+            {practice.logo_url && (
               <Image
                 src={practice.logo_url}
                 alt={`${practice.name} logo`}
@@ -46,12 +46,6 @@ export default async function PatientPage({ params }: { params: Params }) {
                 height={96}
                 className="rounded-xl object-contain"
               />
-            ) : (
-              <div className="flex h-24 w-24 items-center justify-center rounded-xl bg-[#1c1a17]/6">
-                <span className="font-mono text-[10px] uppercase tracking-wider text-[#1c1a17]/35">
-                  {practice.name.slice(0, 2)}
-                </span>
-              </div>
             )}
             <div>
               <p className="text-[15px] font-semibold text-[#1c1a17]">
