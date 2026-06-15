@@ -134,12 +134,12 @@ function ProductCard({
           <Image
             src={product.image_url}
             alt={product.name}
-            width={64}
-            height={64}
+            width={80}
+            height={80}
             className="rounded-[7px] object-contain"
           />
         ) : (
-          <div className="flex h-16 w-16 items-center justify-center rounded-[7px] bg-[#1c1a17]/4">
+          <div className="flex h-20 w-20 items-center justify-center rounded-[7px] bg-[#1c1a17]/4">
             <span className="text-xl opacity-20">⬜</span>
           </div>
         )}
@@ -157,7 +157,7 @@ function ProductCard({
         </div>
 
         {product.instructions && (
-          <p className="text-[11.5px] leading-[1.65] text-[#1c1a17]/55">
+          <p className="line-clamp-2 text-[11.5px] leading-[1.65] text-[#1c1a17]/55 sm:line-clamp-none">
             {product.instructions}
           </p>
         )}
