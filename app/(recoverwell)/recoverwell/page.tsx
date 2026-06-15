@@ -33,7 +33,7 @@ export default function RecoverWellHome() {
       {/* ── Hero ─────────────────────────────────────────────── */}
       <section className="mx-auto max-w-4xl px-6 pb-24 pt-20 text-center md:px-12 md:pt-32">
         <p className="mb-4 font-mono text-[11px] uppercase tracking-[0.3em] text-[#1c1a17]/40">
-          For ophthalmology practices
+          Currently in demo
         </p>
         <h1 className="text-4xl font-medium leading-tight tracking-tight text-[#1c1a17] md:text-5xl">
           Your patients deserve a
