@@ -55,6 +55,7 @@ export function ProductForm({ product }: { product?: RwProduct }) {
       const json = await res.json();
       if (!res.ok || json.error) throw new Error(json.error ?? "Upload failed");
       setImageUrl(json.url);
+      if (imageFileInputRef.current) imageFileInputRef.current.value = "";
     } catch (err) {
       setUploadError(
         err instanceof Error ? err.message : "Upload failed — try again"
