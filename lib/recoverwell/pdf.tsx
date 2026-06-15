@@ -9,13 +9,13 @@ import {
 import type { PageForPdf } from "./portal-pages";
 
 const C = {
-  bg: "#f9f7f4",
+  bg: "#ffffff",
+  card: "#f9f7f4",
   text: "#1c1a17",
   muted: "rgba(28,26,23,0.45)",
   faint: "rgba(28,26,23,0.28)",
   border: "#e8e3da",
-  white: "#ffffff",
-  placeholder: "rgba(28,26,23,0.04)",
+  placeholder: "rgba(28,26,23,0.06)",
   logoBg: "rgba(28,26,23,0.06)",
 };
 
@@ -28,6 +28,16 @@ const s = StyleSheet.create({
     fontSize: 10,
     color: C.text,
     fontFamily: "Helvetica",
+  },
+  // ── Header ──────────────────────────────────────────────────
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: 10,
+  },
+  headerLeft: {
+    flex: 1,
   },
   headerLogoRow: {
     flexDirection: "row",
@@ -77,20 +87,35 @@ const s = StyleSheet.create({
     color: C.muted,
     marginBottom: 10,
   },
+  headerRight: {
+    alignItems: "center",
+    marginLeft: 16,
+  },
+  qr: {
+    width: 72,
+    height: 72,
+  },
+  qrLabel: {
+    fontSize: 7,
+    color: C.muted,
+    textAlign: "center",
+    marginTop: 4,
+    letterSpacing: 0.5,
+  },
   divider: {
     borderBottomWidth: 1,
     borderBottomColor: C.border,
     marginBottom: 12,
   },
+  // ── Product cards ────────────────────────────────────────────
   card: {
     flexDirection: "row",
-    backgroundColor: C.white,
+    backgroundColor: C.card,
     borderWidth: 1,
     borderColor: C.border,
     borderRadius: 6,
     padding: 8,
     marginBottom: 8,
-    position: "relative",
   },
   productImg: {
     width: 56,
@@ -109,7 +134,6 @@ const s = StyleSheet.create({
   },
   productContent: {
     flex: 1,
-    paddingRight: 58,
   },
   productCategory: {
     fontSize: 7,
@@ -128,13 +152,7 @@ const s = StyleSheet.create({
     color: C.muted,
     lineHeight: 1.5,
   },
-  qr: {
-    position: "absolute",
-    top: 8,
-    right: 8,
-    width: 48,
-    height: 48,
-  },
+  // ── Footer ───────────────────────────────────────────────────
   footer: {
     position: "absolute",
     bottom: 20,
@@ -158,13 +176,13 @@ const s = StyleSheet.create({
 export type RecoverWellDocumentProps = {
   page: PageForPdf;
   doctorName: string;
-  qrDataUrls: Record<string, string>; // keyed by product slug
+  qrDataUrl: string; // single QR linking to the doctor's recommendation page
 };
 
 export function RecoverWellDocument({
   page,
   doctorName,
-  qrDataUrls,
+  qrDataUrl,
 }: RecoverWellDocumentProps) {
   const initials = page.practice_name.slice(0, 2).toUpperCase();
 
@@ -172,23 +190,32 @@ export function RecoverWellDocument({
     <Document>
       <Page size="A4" style={s.page}>
         {/* ── Header ── */}
-        <View style={s.headerLogoRow}>
-          {page.practice_logo_url ? (
-            <Image src={page.practice_logo_url} style={s.logo} />
-          ) : (
-            <View style={s.logoPlaceholder}>
-              <Text style={s.logoInitials}>{initials}</Text>
+        <View style={s.header}>
+          <View style={s.headerLeft}>
+            <View style={s.headerLogoRow}>
+              {page.practice_logo_url ? (
+                <Image src={page.practice_logo_url} style={s.logo} />
+              ) : (
+                <View style={s.logoPlaceholder}>
+                  <Text style={s.logoInitials}>{initials}</Text>
+                </View>
+              )}
+              <View>
+                <Text style={s.practiceName}>{page.practice_name}</Text>
+                <Text style={s.surgeryLabel}>
+                  {page.surgery_type.toUpperCase()} · RECOVERY GUIDE
+                </Text>
+              </View>
             </View>
-          )}
-          <View>
-            <Text style={s.practiceName}>{page.practice_name}</Text>
-            <Text style={s.surgeryLabel}>
-              {page.surgery_type.toUpperCase()} · RECOVERY GUIDE
-            </Text>
+            <Text style={s.pageTitle}>Your Doctor's Recommendations</Text>
+            <Text style={s.doctorName}>{doctorName}</Text>
+          </View>
+          <View style={s.headerRight}>
+            <Image src={qrDataUrl} style={s.qr} />
+            <Text style={s.qrLabel}>Scan to view{"\n"}on your phone</Text>
           </View>
         </View>
-        <Text style={s.pageTitle}>Your Doctor's Recommendations</Text>
-        <Text style={s.doctorName}>{doctorName}</Text>
+
         <View style={s.divider} />
 
         {/* ── Product cards ── */}
@@ -210,9 +237,6 @@ export function RecoverWellDocument({
                 </Text>
               ) : null}
             </View>
-            {qrDataUrls[product.slug] ? (
-              <Image src={qrDataUrls[product.slug]} style={s.qr} />
-            ) : null}
           </View>
         ))}
 

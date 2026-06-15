@@ -23,22 +23,20 @@ export async function GET(_req: Request, { params }: Params) {
   }
 
   try {
-    // Generate all QR codes in parallel
-    const qrEntries = await Promise.all(
-      page.products.map(async (p) => {
-        const url = `https://recoverwell.calebbeng.com/products/${p.slug}`;
-        const dataUrl = await generateQrDataUrl(url);
-        return [p.slug, dataUrl] as const;
-      })
-    );
-    const qrDataUrls = Object.fromEntries(qrEntries);
+    // Single QR linking to the doctor's hosted recommendation page
+    const surgerySegment = page.surgery_type
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
+    const pageUrl = `https://recoverwell.calebbeng.com/dr/${doctor.practice.slug}/${surgerySegment}`;
+    const qrDataUrl = await generateQrDataUrl(pageUrl);
 
     const buffer = await renderToBuffer(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       React.createElement(RecoverWellDocument, {
         page,
         doctorName: doctor.name,
-        qrDataUrls,
+        qrDataUrl,
       }) as React.ReactElement<any>
     );
 
