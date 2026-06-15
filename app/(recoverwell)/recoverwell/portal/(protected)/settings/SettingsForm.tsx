@@ -15,7 +15,7 @@ export function SettingsForm({ doctor }: { doctor: DoctorWithPractice }) {
   const [isPending, startTransition] = useTransition();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const initials = doctor.practice.name.slice(0, 2).toUpperCase();
+  const initials = (doctor.practice.name.slice(0, 2) || "?").toUpperCase();
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -42,8 +42,8 @@ export function SettingsForm({ doctor }: { doctor: DoctorWithPractice }) {
 
   function handleSave(formData: FormData) {
     formData.set("logo_url", logoUrl);
-    setSaveStatus("idle");
     startTransition(async () => {
+      setSaveStatus("idle");
       try {
         await saveSettings(formData);
         setSaveStatus("saved");
@@ -105,6 +105,7 @@ export function SettingsForm({ doctor }: { doctor: DoctorWithPractice }) {
             )}
           </div>
         </div>
+        {/* logo_url is injected into FormData via handleSave — no name attribute needed */}
         <div className="mt-3 flex items-center gap-2">
           <span className="shrink-0 font-mono text-[11px] text-[#1c1a17]/35">
             or paste URL
