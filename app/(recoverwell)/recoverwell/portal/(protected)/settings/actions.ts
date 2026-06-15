@@ -12,15 +12,15 @@ export async function saveSettings(formData: FormData) {
     supabase
       .from("rw_practices")
       .update({
-        name: (formData.get("practice_name") as string).trim(),
+        name: (formData.get("practice_name")?.toString() ?? "").trim(),
         contact_email:
-          (formData.get("contact_email") as string).trim() || null,
-        logo_url: (formData.get("logo_url") as string).trim() || null,
+          (formData.get("contact_email")?.toString() ?? "").trim() || null,
+        logo_url: (formData.get("logo_url")?.toString() ?? "").trim() || null,
       })
       .eq("id", doctor.practice.id),
     supabase
       .from("rw_doctors")
-      .update({ name: (formData.get("doctor_name") as string).trim() })
+      .update({ name: (formData.get("doctor_name")?.toString() ?? "").trim() })
       .eq("id", doctor.id),
   ]);
 
