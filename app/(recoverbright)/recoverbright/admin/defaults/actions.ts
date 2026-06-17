@@ -4,10 +4,8 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { requireAdmin } from "@/lib/recoverbright/auth";
 import { revalidatePath } from "next/cache";
 
-export async function saveDefaults(formData: FormData) {
+export async function saveDefaults(surgeryType: string, productIds: string[]) {
   await requireAdmin();
-  const surgeryType = formData.get("surgeryType") as string;
-  const productIds = formData.getAll("productId") as string[];
 
   const supabase = createServiceClient();
 
@@ -29,4 +27,33 @@ export async function saveDefaults(formData: FormData) {
   }
 
   revalidatePath("/recoverbright/admin/defaults");
+}
+
+export async function addSurgeryType(name: string) {
+  await requireAdmin();
+  const trimmed = name.trim();
+  if (!trimmed) throw new Error("Name is required");
+
+  const supabase = createServiceClient();
+
+  const { data: existing } = await supabase
+    .from("rw_surgery_types")
+    .select("sort_order")
+    .order("sort_order", { ascending: false })
+    .limit(1);
+
+  const nextSort =
+    existing && existing.length > 0 ? existing[0].sort_order + 1 : 0;
+
+  const { error } = await supabase
+    .from("rw_surgery_types")
+    .insert({ name: trimmed, sort_order: nextSort });
+
+  if (error) {
+    if (error.code === "23505") throw new Error("Surgery type already exists");
+    throw new Error(error.message);
+  }
+
+  revalidatePath("/recoverbright/admin/defaults");
+  revalidatePath("/recoverbright/portal/pages/new");
 }

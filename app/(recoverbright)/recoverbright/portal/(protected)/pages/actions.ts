@@ -5,13 +5,14 @@ import { redirect } from "next/navigation";
 import { requireDoctor } from "@/lib/recoverbright/auth";
 import { createClient } from "@/lib/supabase/server";
 import { surgeryTypeToUrlSegment } from "@/lib/recoverbright/pages";
-import { SURGERY_TYPES } from "@/lib/recoverbright/portal-pages";
+import { getSurgeryTypes } from "@/lib/recoverbright/portal-pages";
 
 // Called from a <form action={createPage}> — receives FormData
 export async function createPage(formData: FormData) {
   const surgeryType = formData.get("surgeryType") as string;
   if (!surgeryType) throw new Error("Missing surgeryType");
-  if (!(SURGERY_TYPES as readonly string[]).includes(surgeryType))
+  const validTypes = await getSurgeryTypes();
+  if (!validTypes.includes(surgeryType))
     throw new Error("Invalid surgery type");
 
   const doctor = await requireDoctor();

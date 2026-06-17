@@ -61,6 +61,7 @@ export default async function AdminProductsPage({
                 <thead className="border-b border-[#1c1a17]/8 bg-white">
                   <tr>
                     <th className="th">Sort</th>
+                    <th className="th">Image</th>
                     <th className="th">Name</th>
                     <th className="th">Category</th>
                     <th className="th">Instructions</th>
@@ -79,6 +80,17 @@ export default async function AdminProductsPage({
                     >
                       <td className="td font-mono text-[12px] text-[#1c1a17]/40">
                         {p.sort_order}
+                      </td>
+                      <td className="td">
+                        {p.image_url ? (
+                          <img
+                            src={p.image_url}
+                            alt={p.name}
+                            className="h-10 w-10 rounded object-contain"
+                          />
+                        ) : (
+                          <span className="inline-block h-10 w-10 rounded bg-[#1c1a17]/5" />
+                        )}
                       </td>
                       <td className="td font-medium text-[#1c1a17]">
                         <div>{p.name}</div>

@@ -1,12 +1,24 @@
 import { createClient } from "@/lib/supabase/server";
 
-export const SURGERY_TYPES = [
+export const DEFAULT_SURGERY_TYPES = [
   "LASIK",
   "Cataract",
   "Dry Eye",
   "Retinal",
   "Corneal",
 ] as const;
+
+export async function getSurgeryTypes(): Promise<string[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("rw_surgery_types")
+    .select("name")
+    .order("sort_order", { ascending: true });
+  if (error || !data || data.length === 0) {
+    return [...DEFAULT_SURGERY_TYPES];
+  }
+  return data.map((r) => r.name);
+}
 
 export type MyPage = {
   id: string;
