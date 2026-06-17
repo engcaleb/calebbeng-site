@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "Recover Bright — Doctor-curated recovery guides";
+export const alt = "RecoverBright — Doctor-curated recovery guides";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -39,7 +39,7 @@ export default function Image() {
             margin: 0,
           }}
         >
-          Recover Bright
+          RecoverBright
         </h1>
         <p
           style={{

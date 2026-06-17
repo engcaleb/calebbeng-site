@@ -92,7 +92,7 @@ export default async function ProductPage({ params }: { params: Params }) {
               </div>
             )}
             <p className="mt-3 text-center font-mono text-[10px] text-[#1c1a17]/28">
-              Recommended by your doctor · Recover Bright
+              Recommended by your doctor · RecoverBright
             </p>
           </div>
         </div>

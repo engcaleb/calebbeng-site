@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 export const metadata = {
-  title: "Recover Bright — Doctor-Curated Recovery Guides",
+  title: "RecoverBright — Doctor-Curated Recovery Guides",
   description:
     "Give your patients a branded recovery product guide they can trust. Built for ophthalmology practices.",
 };
@@ -12,7 +12,7 @@ export default function RecoverBrightHome() {
       {/* ── Nav ──────────────────────────────────────────────── */}
       <nav className="flex items-center justify-between px-6 py-5 md:px-12">
         <p className="font-mono text-[12px] uppercase tracking-[0.28em] text-[#1c1a17]/60">
-          Recover Bright
+          RecoverBright
         </p>
         <div className="flex items-center gap-6">
           <Link
@@ -155,7 +155,7 @@ export default function RecoverBrightHome() {
       <footer className="border-t border-[#e8e3da] px-6 py-8 md:px-12">
         <div className="mx-auto flex max-w-4xl items-center justify-between">
           <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-[#1c1a17]/35">
-            Recover Bright
+            RecoverBright
           </p>
           <Link
             href="/recoverbright/portal/login"

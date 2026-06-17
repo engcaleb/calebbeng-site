@@ -24,7 +24,7 @@ export default async function AdminProductsPage({
         <div className="mx-auto flex max-w-5xl items-center justify-between">
           <div>
             <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-[#1c1a17]/35">
-              Recover Bright · Admin
+              RecoverBright · Admin
             </p>
             <h1 className="mt-0.5 text-lg font-medium text-[#1c1a17]">
               Product Catalog

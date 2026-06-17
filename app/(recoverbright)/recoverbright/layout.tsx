@@ -2,21 +2,21 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: {
-    default: "Recover Bright",
-    template: "%s | Recover Bright",
+    default: "RecoverBright",
+    template: "%s | RecoverBright",
   },
   description:
     "Doctor-curated recovery products for your procedure. Recommended by your care team.",
   openGraph: {
-    title: "Recover Bright",
+    title: "RecoverBright",
     description:
       "Doctor-curated recovery products for your procedure. Recommended by your care team.",
-    siteName: "Recover Bright",
+    siteName: "RecoverBright",
     type: "website",
   },
   twitter: {
     card: "summary",
-    title: "Recover Bright",
+    title: "RecoverBright",
     description:
       "Doctor-curated recovery products for your procedure. Recommended by your care team.",
   },

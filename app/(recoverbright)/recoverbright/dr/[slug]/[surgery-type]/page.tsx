@@ -99,7 +99,7 @@ export default async function PatientPage({ params }: { params: Params }) {
         <div className="mx-auto max-w-2xl">
           <p className="text-center font-mono text-[9px] uppercase tracking-[0.22em] text-[#1c1a17]/25 leading-[1.8]">
             Not a substitute for medical advice<br />
-            Follow your doctor&apos;s instructions · Recover Bright
+            Follow your doctor&apos;s instructions · RecoverBright
           </p>
         </div>
       </footer>
