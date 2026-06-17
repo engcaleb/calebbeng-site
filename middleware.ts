@@ -36,24 +36,26 @@ export async function middleware(request: NextRequest) {
   // Return value is intentionally ignored here — auth decisions happen in layouts.
   await supabase.auth.getUser();
 
-  // --- Hostname rewrite for recoverwell.calebbeng.com ---
+  // --- Hostname rewrite for recoverbright.com ---
   const hostname = request.headers.get("host") ?? "";
-  const isRecoverWell =
-    hostname === "recoverwell.calebbeng.com" ||
-    hostname.startsWith("recoverwell.calebbeng.com:");
+  const isRecoverBright =
+    hostname === "recoverbright.com" ||
+    hostname.startsWith("recoverbright.com:") ||
+    hostname === "www.recoverbright.com" ||
+    hostname.startsWith("www.recoverbright.com:");
 
   let response: NextResponse;
 
-  if (!isRecoverWell) {
+  if (!isRecoverBright) {
     response = NextResponse.next({ request });
   } else {
     const { pathname, search } = request.nextUrl;
 
-    if (pathname.startsWith("/recoverwell")) {
+    if (pathname.startsWith("/recoverbright")) {
       response = NextResponse.next({ request });
     } else {
       const rewritten = new URL(
-        `/recoverwell${pathname === "/" ? "" : pathname}${search}`,
+        `/recoverbright${pathname === "/" ? "" : pathname}${search}`,
         request.url,
       );
       response = NextResponse.rewrite(rewritten);
