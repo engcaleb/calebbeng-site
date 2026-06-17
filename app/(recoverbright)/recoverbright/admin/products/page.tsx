@@ -50,7 +50,10 @@ export default async function AdminProductsPage({
           <h2 className="mb-5 text-[13px] font-semibold uppercase tracking-[0.18em] text-[#1c1a17]/50">
             {editProduct ? `Editing — ${editProduct.name}` : "Add Product"}
           </h2>
-          <ProductForm product={editProduct ?? undefined} />
+          <ProductForm
+            product={editProduct ?? undefined}
+            existingCategories={[...new Set(products.map((p) => p.category))]}
+          />
         </section>
 
         {/* Product list */}

@@ -4,7 +4,7 @@ import { useRef, useState, useTransition } from "react";
 import { upsertProduct } from "./actions";
 import type { RwProduct } from "@/lib/recoverbright/products";
 
-export const CATEGORIES = [
+export const DEFAULT_CATEGORIES = [
   "Artificial Tears · Preservative-Free",
   "UV Protective Eyewear",
   "Sleep Eye Shield",
@@ -27,7 +27,13 @@ function toSlug(name: string) {
     .replace(/^-|-$/g, "");
 }
 
-export function ProductForm({ product }: { product?: RwProduct }) {
+export function ProductForm({
+  product,
+  existingCategories = [],
+}: {
+  product?: RwProduct;
+  existingCategories?: string[];
+}) {
   const isEdit = !!product?.id;
   const [name, setName] = useState(product?.name ?? "");
   const [slug, setSlug] = useState(product?.slug ?? "");
@@ -127,18 +133,22 @@ export function ProductForm({ product }: { product?: RwProduct }) {
         {/* Category */}
         <div className="flex flex-col gap-1">
           <label className="label" htmlFor="category">Category *</label>
-          <select
+          <input
             id="category"
             name="category"
             required
+            list="category-suggestions"
             defaultValue={product?.category ?? ""}
             className="input"
-          >
-            <option value="" disabled>Select a category…</option>
-            {CATEGORIES.map((c) => (
-              <option key={c} value={c}>{c}</option>
-            ))}
-          </select>
+            placeholder="Select or type a new category…"
+          />
+          <datalist id="category-suggestions">
+            {[...new Set([...DEFAULT_CATEGORIES, ...existingCategories])].map(
+              (c) => (
+                <option key={c} value={c} />
+              )
+            )}
+          </datalist>
         </div>
 
         {/* Sort Order */}
