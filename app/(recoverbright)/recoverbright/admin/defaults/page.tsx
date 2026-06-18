@@ -37,12 +37,20 @@ export default async function AdminDefaultsPage() {
               Default Products
             </h1>
           </div>
-          <a
-            href="/recoverbright/admin/products"
-            className="font-mono text-[12px] text-[#1c1a17]/40 hover:text-[#1c1a17]"
-          >
-            ← Products
-          </a>
+          <div className="flex items-center gap-4">
+            <a
+              href="/recoverbright/admin/articles"
+              className="font-mono text-[12px] text-[#1c1a17]/40 hover:text-[#1c1a17]"
+            >
+              Articles →
+            </a>
+            <a
+              href="/recoverbright/admin/products"
+              className="font-mono text-[12px] text-[#1c1a17]/40 hover:text-[#1c1a17]"
+            >
+              ← Products
+            </a>
+          </div>
         </div>
       </header>
 

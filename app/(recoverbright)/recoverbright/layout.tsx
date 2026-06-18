@@ -6,11 +6,11 @@ export const metadata: Metadata = {
     template: "%s | RecoverBright",
   },
   description:
-    "Doctor-curated recovery products for your procedure. Recommended by your care team.",
+    "Doctor-curated recovery guides with the products you need. Recommended by your care team, ready when you are.",
   openGraph: {
     title: "RecoverBright",
     description:
-      "Doctor-curated recovery products for your procedure. Recommended by your care team.",
+      "Doctor-curated recovery guides with the products you need. Recommended by your care team, ready when you are.",
     siteName: "RecoverBright",
     type: "website",
   },
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     card: "summary",
     title: "RecoverBright",
     description:
-      "Doctor-curated recovery products for your procedure. Recommended by your care team.",
+      "Doctor-curated recovery guides with the products you need. Recommended by your care team, ready when you are.",
   },
 };
 

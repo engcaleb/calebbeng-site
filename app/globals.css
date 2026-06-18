@@ -67,3 +67,40 @@ details summary::-webkit-details-marker {
 .td {
   @apply px-4 py-3 align-top text-[13px];
 }
+
+/* ── Article content (markdown) ──────────── */
+.article-content h2 {
+  @apply mt-10 mb-4 text-xl font-medium tracking-tight text-[#1c1a17];
+}
+
+.article-content h3 {
+  @apply mt-8 mb-3 text-[17px] font-medium text-[#1c1a17];
+}
+
+.article-content p {
+  @apply mb-4 text-[15px] leading-relaxed text-[#1c1a17]/70;
+}
+
+.article-content ul {
+  @apply mb-4 ml-5 list-disc space-y-1 text-[15px] leading-relaxed text-[#1c1a17]/70;
+}
+
+.article-content ol {
+  @apply mb-4 ml-5 list-decimal space-y-1 text-[15px] leading-relaxed text-[#1c1a17]/70;
+}
+
+.article-content strong {
+  @apply font-medium text-[#1c1a17];
+}
+
+.article-content a {
+  @apply underline underline-offset-2 hover:text-[#1c1a17] transition;
+}
+
+.article-content blockquote {
+  @apply my-6 border-l-2 border-[#1c1a17]/15 pl-4 text-[15px] italic text-[#1c1a17]/50;
+}
+
+.article-content hr {
+  @apply my-8 border-[#e8e3da];
+}

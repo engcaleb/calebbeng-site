@@ -32,6 +32,12 @@ export default async function AdminProductsPage({
           </div>
           <div className="flex items-center gap-4">
             <a
+              href="/recoverbright/admin/articles"
+              className="font-mono text-[12px] text-[#1c1a17]/40 hover:text-[#1c1a17]"
+            >
+              Articles →
+            </a>
+            <a
               href="/recoverbright/admin/defaults"
               className="font-mono text-[12px] text-[#1c1a17]/40 hover:text-[#1c1a17]"
             >
