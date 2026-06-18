@@ -1,6 +1,7 @@
 // app/(recoverbright)/recoverbright/portal/(protected)/page.tsx
 import { requireDoctor } from "@/lib/recoverbright/auth";
 import { getMyPages } from "@/lib/recoverbright/portal-pages";
+import { surgeryTypeToUrlSegment } from "@/lib/recoverbright/pages";
 import { logoutAction } from "../login/actions";
 import Link from "next/link";
 
@@ -51,46 +52,66 @@ export default async function PortalPage() {
           </div>
         ) : (
           <div className="space-y-3">
-            {pages.map((page) => (
-              <div
-                key={page.id}
-                className="flex items-center justify-between rounded-xl border border-[#e8e3da] bg-white px-6 py-5"
-              >
-                <div>
-                  <p className="font-medium text-[#1c1a17]">
-                    {page.surgery_type}
-                  </p>
-                  <p className="mt-0.5 font-mono text-[12px] text-[#1c1a17]/40">
-                    {page.product_count}{" "}
-                    {page.product_count === 1 ? "product" : "products"}
-                  </p>
+            {pages.map((page) => {
+              const segment = surgeryTypeToUrlSegment(page.surgery_type);
+              const patientPath = `/dr/${doctor.practice.slug}/${segment}`;
+              return (
+                <div
+                  key={page.id}
+                  className="rounded-xl border border-[#e8e3da] bg-white px-6 py-5"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-[#1c1a17]">
+                        {page.surgery_type}
+                      </p>
+                      <p className="mt-0.5 font-mono text-[12px] text-[#1c1a17]/40">
+                        {page.product_count}{" "}
+                        {page.product_count === 1 ? "product" : "products"}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={`rounded-full px-2.5 py-0.5 font-mono text-[11px] ${
+                          page.is_published
+                            ? "bg-green-50 text-green-700"
+                            : "bg-[#1c1a17]/6 text-[#1c1a17]/40"
+                        }`}
+                      >
+                        {page.is_published ? "Published" : "Draft"}
+                      </span>
+                      {page.is_published && (
+                        <Link
+                          href={`/recoverbright${patientPath}`}
+                          target="_blank"
+                          className="font-mono text-[12px] text-[#1c1a17]/50 underline underline-offset-2 hover:text-[#1c1a17]"
+                        >
+                          View
+                        </Link>
+                      )}
+                      <a
+                        href={`/recoverbright/portal/pages/${page.id}/pdf`}
+                        download
+                        className="font-mono text-[12px] text-[#1c1a17]/50 underline underline-offset-2 hover:text-[#1c1a17]"
+                      >
+                        PDF
+                      </a>
+                      <Link
+                        href={`/recoverbright/portal/pages/${page.id}/edit`}
+                        className="font-mono text-[12px] text-[#1c1a17]/50 underline underline-offset-2 hover:text-[#1c1a17]"
+                      >
+                        Edit
+                      </Link>
+                    </div>
+                  </div>
+                  {page.is_published && (
+                    <p className="mt-2 font-mono text-[11px] text-[#1c1a17]/30">
+                      recoverbright.com{patientPath}
+                    </p>
+                  )}
                 </div>
-                <div className="flex items-center gap-3">
-                  <span
-                    className={`rounded-full px-2.5 py-0.5 font-mono text-[11px] ${
-                      page.is_published
-                        ? "bg-green-50 text-green-700"
-                        : "bg-[#1c1a17]/6 text-[#1c1a17]/40"
-                    }`}
-                  >
-                    {page.is_published ? "Published" : "Draft"}
-                  </span>
-                  <a
-                    href={`/recoverbright/portal/pages/${page.id}/pdf`}
-                    download
-                    className="font-mono text-[12px] text-[#1c1a17]/50 underline underline-offset-2 hover:text-[#1c1a17]"
-                  >
-                    PDF
-                  </a>
-                  <Link
-                    href={`/recoverbright/portal/pages/${page.id}/edit`}
-                    className="font-mono text-[12px] text-[#1c1a17]/50 underline underline-offset-2 hover:text-[#1c1a17]"
-                  >
-                    Edit
-                  </Link>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

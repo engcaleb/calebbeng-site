@@ -157,7 +157,7 @@ function ProductCard({
           {product.buy_url ? (
             <Link
               href={`/recoverbright/products/${product.slug}`}
-              className="inline-flex items-center gap-1.5 rounded-[5px] bg-[#1c1a17] px-3.5 py-1.5 text-[11px] font-medium text-[#f9f7f4] transition hover:bg-[#1c1a17]/80"
+              className="inline-flex items-center gap-1.5 rounded-[5px] bg-[#1c1a17] px-4 py-2 text-[13px] font-medium text-[#f9f7f4] transition hover:bg-[#1c1a17]/80"
             >
               Buy Now
               <span aria-hidden="true">→</span>

@@ -157,12 +157,20 @@ export default function RecoverBrightHome() {
           <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-[#1c1a17]/35">
             RecoverBright
           </p>
-          <Link
-            href="/recoverbright/portal/login"
-            className="font-mono text-[11px] text-[#1c1a17]/35 hover:text-[#1c1a17] transition"
-          >
-            Doctor sign in →
-          </Link>
+          <div className="flex items-center gap-5">
+            <Link
+              href="/recoverbright/privacy"
+              className="font-mono text-[11px] text-[#1c1a17]/35 hover:text-[#1c1a17] transition"
+            >
+              Privacy
+            </Link>
+            <Link
+              href="/recoverbright/portal/login"
+              className="font-mono text-[11px] text-[#1c1a17]/35 hover:text-[#1c1a17] transition"
+            >
+              Doctor sign in →
+            </Link>
+          </div>
         </div>
       </footer>
     </div>
