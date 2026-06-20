@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useRef, useState, useActionState } from "react";
 import { saveArticle } from "./actions";
 import type { Article } from "@/lib/recoverbright/articles";
 
@@ -11,6 +11,12 @@ export function ArticleForm({
   article?: Article;
   existingCategories: string[];
 }) {
+  const isEdit = !!article?.id;
+  const imageFileInputRef = useRef<HTMLInputElement>(null);
+  const [imageUrl, setImageUrl] = useState(article?.image_url ?? "");
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
   const [error, action, pending] = useActionState(
     async (_prev: string | null, formData: FormData) => {
       try {
@@ -22,6 +28,36 @@ export function ArticleForm({
     },
     null,
   );
+
+  async function handleImageFileChange(
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) {
+    const file = e.target.files?.[0];
+    if (!file || !article?.id) return;
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError("Image must be under 5MB");
+      return;
+    }
+    setIsUploading(true);
+    setUploadError(null);
+    try {
+      const body = new FormData();
+      body.append("file", file);
+      body.append("bucket", "article-images");
+      body.append("id", article.id);
+      const res = await fetch("/api/upload", { method: "POST", body });
+      const json = await res.json();
+      if (!res.ok || json.error) throw new Error(json.error ?? "Upload failed");
+      setImageUrl(json.url);
+      if (imageFileInputRef.current) imageFileInputRef.current.value = "";
+    } catch (err) {
+      setUploadError(
+        err instanceof Error ? err.message : "Upload failed — try again",
+      );
+    } finally {
+      setIsUploading(false);
+    }
+  }
 
   return (
     <form action={action} className="space-y-4">
@@ -63,6 +99,70 @@ export function ArticleForm({
             placeholder="Short summary for article cards"
           />
         </div>
+      </div>
+
+      <div>
+        <label className="label">Cover Image</label>
+        <div className="mt-1 flex items-center gap-2">
+          {isEdit ? (
+            <>
+              <button
+                type="button"
+                onClick={() => imageFileInputRef.current?.click()}
+                disabled={isUploading}
+                className="btn-ghost shrink-0 disabled:opacity-50"
+              >
+                {isUploading ? "Uploading…" : "Choose file"}
+              </button>
+              <input
+                ref={imageFileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleImageFileChange}
+              />
+              <span className="shrink-0 font-mono text-[11px] text-[#1c1a17]/35">
+                or
+              </span>
+            </>
+          ) : (
+            <span className="shrink-0 font-mono text-[11px] text-[#1c1a17]/35">
+              Save first to upload ·
+            </span>
+          )}
+          <input
+            name="image_url"
+            type="url"
+            value={imageUrl}
+            onChange={(e) => {
+              setImageUrl(e.target.value);
+              setUploadError(null);
+            }}
+            placeholder="https://…"
+            className="input flex-1 font-mono text-[13px]"
+          />
+        </div>
+        {uploadError && (
+          <p className="mt-1 font-mono text-[11px] text-red-500">
+            {uploadError}
+          </p>
+        )}
+        {imageUrl && (
+          <div className="mt-2 flex items-center gap-3">
+            <img
+              src={imageUrl}
+              alt=""
+              className="h-20 w-32 rounded-lg border border-[#1c1a17]/8 object-cover"
+            />
+            <button
+              type="button"
+              onClick={() => setImageUrl("")}
+              className="font-mono text-[11px] text-red-400 hover:text-red-600"
+            >
+              Remove image
+            </button>
+          </div>
+        )}
       </div>
 
       <div>

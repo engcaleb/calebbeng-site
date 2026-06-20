@@ -151,21 +151,30 @@ export default async function RecoverBrightHome() {
                 <Link
                   key={article.id}
                   href={`/recoverbright/articles/${article.slug}`}
-                  className="group rounded-xl border border-[#e8e3da] bg-white p-5 transition hover:border-[#1c1a17]/20"
+                  className="group overflow-hidden rounded-xl border border-[#e8e3da] bg-white transition hover:border-[#1c1a17]/20"
                 >
-                  {article.category && (
-                    <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.22em] text-[#1c1a17]/30">
-                      {article.category}
-                    </p>
+                  {article.image_url && (
+                    <img
+                      src={article.image_url}
+                      alt=""
+                      className="h-36 w-full object-cover"
+                    />
                   )}
-                  <h3 className="text-[15px] font-medium text-[#1c1a17] group-hover:text-[#1c1a17]/80 transition">
-                    {article.title}
-                  </h3>
-                  {article.excerpt && (
-                    <p className="mt-2 text-[13px] leading-relaxed text-[#1c1a17]/50 line-clamp-2">
-                      {article.excerpt}
-                    </p>
-                  )}
+                  <div className="p-5">
+                    {article.category && (
+                      <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.22em] text-[#1c1a17]/30">
+                        {article.category}
+                      </p>
+                    )}
+                    <h3 className="text-[15px] font-medium text-[#1c1a17] group-hover:text-[#1c1a17]/80 transition">
+                      {article.title}
+                    </h3>
+                    {article.excerpt && (
+                      <p className="mt-2 text-[13px] leading-relaxed text-[#1c1a17]/50 line-clamp-2">
+                        {article.excerpt}
+                      </p>
+                    )}
+                  </div>
                 </Link>
               ))}
             </div>

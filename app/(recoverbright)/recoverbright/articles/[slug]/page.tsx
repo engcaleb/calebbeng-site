@@ -73,6 +73,15 @@ export default async function ArticlePage({
           </p>
         </div>
 
+        {article.image_url && (
+          <img
+            src={article.image_url}
+            alt=""
+            className="mt-8 w-full rounded-xl object-cover"
+            style={{ maxHeight: "400px" }}
+          />
+        )}
+
         <div
           className="article-content mt-10"
           dangerouslySetInnerHTML={{ __html: html }}

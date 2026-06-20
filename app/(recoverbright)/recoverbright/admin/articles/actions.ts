@@ -13,6 +13,7 @@ export async function saveArticle(formData: FormData) {
   const content = formData.get("content") as string;
   const excerpt = (formData.get("excerpt") as string)?.trim() || null;
   const category = (formData.get("category") as string)?.trim() || null;
+  const image_url = (formData.get("image_url") as string)?.trim() || null;
 
   if (!title) throw new Error("Title is required");
 
@@ -21,14 +22,14 @@ export async function saveArticle(formData: FormData) {
   if (id) {
     const { error } = await supabase
       .from("rw_articles")
-      .update({ title, content, excerpt, category, updated_at: new Date().toISOString() })
+      .update({ title, content, excerpt, category, image_url, updated_at: new Date().toISOString() })
       .eq("id", id);
     if (error) throw new Error(error.message);
   } else {
     const slug = titleToSlug(title);
     const { error } = await supabase
       .from("rw_articles")
-      .insert({ title, slug, content, excerpt, category });
+      .insert({ title, slug, content, excerpt, category, image_url });
     if (error) {
       if (error.code === "23505") throw new Error("An article with that title already exists");
       throw new Error(error.message);

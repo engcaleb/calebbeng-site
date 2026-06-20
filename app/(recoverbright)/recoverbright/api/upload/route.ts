@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
-const ALLOWED_BUCKETS = ["practice-logos", "product-images"] as const;
+const ALLOWED_BUCKETS = ["practice-logos", "product-images", "article-images"] as const;
 type AllowedBucket = (typeof ALLOWED_BUCKETS)[number];
 
 function extFromMime(mime: string): string {

@@ -83,12 +83,23 @@ export default async function AdminArticlesPage({
                     className="border-b border-[#1c1a17]/5"
                   >
                     <td className="td">
-                      <p className="font-medium text-[#1c1a17]">
-                        {article.title}
-                      </p>
-                      <p className="mt-0.5 font-mono text-[11px] text-[#1c1a17]/30">
-                        /articles/{article.slug}
-                      </p>
+                      <div className="flex items-center gap-3">
+                        {article.image_url && (
+                          <img
+                            src={article.image_url}
+                            alt=""
+                            className="h-10 w-16 shrink-0 rounded border border-[#1c1a17]/8 object-cover"
+                          />
+                        )}
+                        <div>
+                          <p className="font-medium text-[#1c1a17]">
+                            {article.title}
+                          </p>
+                          <p className="mt-0.5 font-mono text-[11px] text-[#1c1a17]/30">
+                            /articles/{article.slug}
+                          </p>
+                        </div>
+                      </div>
                     </td>
                     <td className="td text-[#1c1a17]/50">
                       {article.category || "—"}

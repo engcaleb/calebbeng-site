@@ -69,28 +69,37 @@ export default async function ArticlesPage() {
               <Link
                 key={article.id}
                 href={`/recoverbright/articles/${article.slug}`}
-                className="block rounded-xl border border-[#e8e3da] bg-white p-6 transition hover:border-[#1c1a17]/20"
+                className="block overflow-hidden rounded-xl border border-[#e8e3da] bg-white transition hover:border-[#1c1a17]/20"
               >
-                {article.category && (
-                  <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.22em] text-[#1c1a17]/35">
-                    {article.category}
-                  </p>
+                {article.image_url && (
+                  <img
+                    src={article.image_url}
+                    alt=""
+                    className="h-48 w-full object-cover"
+                  />
                 )}
-                <h2 className="text-[17px] font-medium text-[#1c1a17]">
-                  {article.title}
-                </h2>
-                {article.excerpt && (
-                  <p className="mt-2 text-[14px] leading-relaxed text-[#1c1a17]/55">
-                    {article.excerpt}
+                <div className="p-6">
+                  {article.category && (
+                    <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.22em] text-[#1c1a17]/35">
+                      {article.category}
+                    </p>
+                  )}
+                  <h2 className="text-[17px] font-medium text-[#1c1a17]">
+                    {article.title}
+                  </h2>
+                  {article.excerpt && (
+                    <p className="mt-2 text-[14px] leading-relaxed text-[#1c1a17]/55">
+                      {article.excerpt}
+                    </p>
+                  )}
+                  <p className="mt-3 font-mono text-[11px] text-[#1c1a17]/30">
+                    {new Date(article.created_at).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
                   </p>
-                )}
-                <p className="mt-3 font-mono text-[11px] text-[#1c1a17]/30">
-                  {new Date(article.created_at).toLocaleDateString("en-US", {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
-                </p>
+                </div>
               </Link>
             ))}
           </div>
