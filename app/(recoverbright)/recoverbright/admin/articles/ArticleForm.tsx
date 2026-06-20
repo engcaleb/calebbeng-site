@@ -62,6 +62,7 @@ export function ArticleForm({
   return (
     <form action={action} className="space-y-4">
       {article && <input type="hidden" name="id" value={article.id} />}
+      <input type="hidden" name="old_image_url" value={article?.image_url ?? ""} />
 
       <div>
         <label className="label">Title</label>

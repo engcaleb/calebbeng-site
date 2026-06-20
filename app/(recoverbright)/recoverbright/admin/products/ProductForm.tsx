@@ -95,6 +95,7 @@ export function ProductForm({
     <form ref={formRef} action={handleSubmit}>
       {isEdit && <input type="hidden" name="id" value={product.id} />}
       <input type="hidden" name="is_active" value={product?.is_active !== false ? "true" : "false"} />
+      <input type="hidden" name="old_image_url" value={product?.image_url ?? ""} />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {/* Name */}
@@ -226,6 +227,22 @@ export function ProductForm({
             <p className="mt-1 font-mono text-[11px] text-red-500">
               {uploadError}
             </p>
+          )}
+          {imageUrl && (
+            <div className="mt-2 flex items-center gap-3">
+              <img
+                src={imageUrl}
+                alt=""
+                className="h-20 w-20 rounded-lg border border-[#1c1a17]/8 object-cover"
+              />
+              <button
+                type="button"
+                onClick={() => setImageUrl("")}
+                className="font-mono text-[11px] text-red-400 hover:text-red-600"
+              >
+                Remove image
+              </button>
+            </div>
           )}
         </div>
 
