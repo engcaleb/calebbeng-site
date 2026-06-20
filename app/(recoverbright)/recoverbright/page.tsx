@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getFeaturedArticles } from "@/lib/recoverbright/articles";
+import { TrackedCTALink } from "./TrackedCTALink";
 
 export const metadata = {
   title: "RecoverBright — Recovery Guides From Your Care Team",
@@ -234,12 +235,14 @@ export default async function RecoverBrightHome() {
           </div>
 
           <div className="mt-12 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-            <Link
+            <TrackedCTALink
               href="/recoverbright/portal/register"
+              event="provider_cta_clicked"
+              location="provider_section"
               className="rounded bg-[#1c1a17] px-6 py-3 text-[14px] font-medium text-[#f9f7f4] hover:bg-[#1c1a17]/80 transition"
             >
               Create your portal →
-            </Link>
+            </TrackedCTALink>
             <Link
               href="/recoverbright/portal/login"
               className="rounded px-6 py-3 text-[14px] text-[#1c1a17]/50 hover:text-[#1c1a17] transition"
@@ -268,12 +271,14 @@ export default async function RecoverBrightHome() {
             >
               Browse articles
             </Link>
-            <Link
+            <TrackedCTALink
               href="/recoverbright/portal/register"
+              event="provider_cta_clicked"
+              location="footer_cta"
               className="rounded bg-[#1c1a17] px-6 py-3 text-[14px] font-medium text-[#f9f7f4] hover:bg-[#1c1a17]/80 transition"
             >
               Create provider portal →
-            </Link>
+            </TrackedCTALink>
           </div>
         </div>
       </section>

@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
-import Link from "next/link";
 import { getPublishedPage } from "@/lib/recoverbright/pages";
+import { BuyNowLink } from "./BuyNowLink";
 import type { Metadata } from "next";
 
 type Params = Promise<{ slug: string; "surgery-type": string }>;
@@ -81,7 +81,12 @@ export default async function PatientPage({ params }: { params: Params }) {
             </p>
             <div className="space-y-2">
               {items.map((product) => (
-                <ProductCard key={product.page_product_id} product={product} />
+                <ProductCard
+                  key={product.page_product_id}
+                  product={product}
+                  practiceSlug={slug}
+                  surgeryType={surgery_type}
+                />
               ))}
             </div>
           </section>
@@ -109,6 +114,8 @@ export default async function PatientPage({ params }: { params: Params }) {
 
 function ProductCard({
   product,
+  practiceSlug,
+  surgeryType,
 }: {
   product: {
     page_product_id: string;
@@ -119,6 +126,8 @@ function ProductCard({
     instructions: string | null;
     buy_url: string | null;
   };
+  practiceSlug: string;
+  surgeryType: string;
 }) {
   return (
     <div className="flex gap-4 rounded-[9px] border border-[#1c1a17]/8 bg-white p-4 sm:p-5">
@@ -155,13 +164,12 @@ function ProductCard({
         {/* Buy button */}
         <div className="mt-1">
           {product.buy_url ? (
-            <Link
+            <BuyNowLink
               href={`/recoverbright/products/${product.slug}`}
-              className="inline-flex items-center gap-1.5 rounded-[5px] bg-[#1c1a17] px-4 py-2 text-[13px] font-medium text-[#f9f7f4] transition hover:bg-[#1c1a17]/80"
-            >
-              Buy Now
-              <span aria-hidden="true">→</span>
-            </Link>
+              productSlug={product.slug}
+              practiceSlug={practiceSlug}
+              surgeryType={surgeryType}
+            />
           ) : (
             <span className="font-mono text-[11px] text-[#1c1a17]/30">
               Link coming soon

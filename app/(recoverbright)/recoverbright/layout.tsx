@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { RBAnalytics } from "./RBAnalytics";
 
 export const metadata: Metadata = {
   title: {
@@ -27,5 +28,10 @@ export default function RecoverBrightLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return children;
+  return (
+    <>
+      <RBAnalytics />
+      {children}
+    </>
+  );
 }

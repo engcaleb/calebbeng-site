@@ -33,8 +33,15 @@ export async function middleware(request: NextRequest) {
   );
 
   // getUser() refreshes the access token if it is near expiry.
-  // Return value is intentionally ignored here — auth decisions happen in layouts.
-  await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  const ANALYTICS_EXCLUDE_EMAILS = [
+    "calebeng21@gmail.com",
+    "doctor@prestige.test",
+  ];
+  const shouldExclude = user?.email
+    ? ANALYTICS_EXCLUDE_EMAILS.includes(user.email)
+    : false;
 
   // --- Hostname rewrite for recoverbright.com ---
   const hostname = request.headers.get("host") ?? "";
@@ -60,6 +67,13 @@ export async function middleware(request: NextRequest) {
       );
       response = NextResponse.rewrite(rewritten);
     }
+  }
+
+  // Set analytics exclusion cookie
+  if (shouldExclude) {
+    response.cookies.set("rb_no_track", "1", { path: "/", httpOnly: false });
+  } else if (request.cookies.get("rb_no_track")) {
+    response.cookies.delete("rb_no_track");
   }
 
   // Apply any auth cookies and cache-control headers to the final response

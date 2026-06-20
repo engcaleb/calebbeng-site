@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import { getProducts } from "@/lib/recoverbright/products";
 import { BackButton } from "../BackButton";
+import { BuyOnAmazonLink } from "../BuyOnAmazonLink";
 import type { Metadata } from "next";
 
 type Params = Promise<{ slug: string }>;
@@ -75,15 +76,10 @@ export default async function ProductPage({ params }: { params: Params }) {
           {/* Buy button */}
           <div className="mt-6 border-t border-[#1c1a17]/8 pt-6">
             {product.buy_url ? (
-              <a
+              <BuyOnAmazonLink
                 href={product.buy_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#1c1a17] px-6 py-3.5 text-[14px] font-medium text-[#f9f7f4] transition hover:bg-[#1c1a17]/80"
-              >
-                Buy on Amazon
-                <span aria-hidden="true" className="text-[#f9f7f4]/60">↗</span>
-              </a>
+                productSlug={product.slug}
+              />
             ) : (
               <div className="rounded-lg border border-[#1c1a17]/10 p-4 text-center">
                 <p className="text-[13px] text-[#1c1a17]/45">
