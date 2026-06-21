@@ -14,11 +14,37 @@ export async function generateMetadata({
   const { slug } = await params;
   const article = await getArticleBySlug(slug);
   if (!article) return { title: "Not Found" };
+
+  const title = `${article.title} — RecoverBright`;
+  const description =
+    article.excerpt ??
+    `${article.title} — recovery information from RecoverBright.`;
+  const url = `https://recoverbright.com/articles/${article.slug}`;
+
   return {
-    title: `${article.title} — RecoverBright`,
-    description:
-      article.excerpt ??
-      `${article.title} — recovery information from RecoverBright.`,
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      url,
+      siteName: "RecoverBright",
+      type: "article",
+      publishedTime: article.created_at,
+      modifiedTime: article.updated_at,
+      ...(article.image_url && {
+        images: [{ url: article.image_url, alt: article.title }],
+      }),
+    },
+    twitter: {
+      card: article.image_url ? "summary_large_image" : "summary",
+      title,
+      description,
+      ...(article.image_url && { images: [article.image_url] }),
+    },
+    alternates: {
+      canonical: url,
+    },
   };
 }
 

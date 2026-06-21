@@ -6,6 +6,23 @@ export const metadata: Metadata = {
   title: "Articles — RecoverBright",
   description:
     "Recovery guides and procedure information to help you prepare.",
+  openGraph: {
+    title: "Articles — RecoverBright",
+    description:
+      "Recovery guides and procedure information to help you prepare.",
+    url: "https://recoverbright.com/articles",
+    siteName: "RecoverBright",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "Articles — RecoverBright",
+    description:
+      "Recovery guides and procedure information to help you prepare.",
+  },
+  alternates: {
+    canonical: "https://recoverbright.com/articles",
+  },
 };
 
 export default async function ArticlesPage() {
