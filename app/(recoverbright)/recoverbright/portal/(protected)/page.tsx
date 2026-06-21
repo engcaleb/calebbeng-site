@@ -3,11 +3,57 @@ import { requireDoctor } from "@/lib/recoverbright/auth";
 import { getPracticePages } from "@/lib/recoverbright/portal-pages";
 import { surgeryTypeToUrlSegment } from "@/lib/recoverbright/pages";
 import { logoutAction } from "../login/actions";
+import { OnboardingChecklist } from "./OnboardingChecklist";
 import Link from "next/link";
 
 export default async function PortalPage() {
   const doctor = await requireDoctor();
   const pages = await getPracticePages(doctor.practice.id);
+
+  const myPages = pages.filter((p) => p.doctor_slug === doctor.slug);
+  const hasLogo = !!doctor.practice.logo_url;
+  const hasPage = myPages.length > 0;
+  const hasPublishedPage = myPages.some((p) => p.is_published);
+
+  const firstPublishedPage = myPages.find((p) => p.is_published);
+  const shareUrl = firstPublishedPage
+    ? `/dr/${doctor.practice.slug}/${doctor.slug}/${surgeryTypeToUrlSegment(firstPublishedPage.surgery_type)}`
+    : null;
+
+  const onboardingSteps = [
+    {
+      label: "Upload your practice logo",
+      description: "Appears on patient pages and PDFs",
+      href: "/recoverbright/portal/settings",
+      done: hasLogo,
+    },
+    {
+      label: "Create your first page",
+      description: "Pick a surgery type and customize products",
+      href: "/recoverbright/portal/pages/new",
+      done: hasPage,
+    },
+    {
+      label: "Preview your page",
+      description: "See what patients will see",
+      href: firstPublishedPage
+        ? `/recoverbright${shareUrl}`
+        : "/recoverbright/portal/pages/new",
+      done: hasPublishedPage,
+    },
+    {
+      label: "Share with patients",
+      description: "Copy link or download PDF",
+      href: firstPublishedPage
+        ? `/recoverbright/portal/pages/${firstPublishedPage.id}/edit`
+        : "/recoverbright/portal/pages/new",
+      done: hasPublishedPage,
+    },
+  ];
+
+  const showOnboarding =
+    !doctor.onboarding_dismissed &&
+    onboardingSteps.some((s) => !s.done);
 
   return (
     <main className="min-h-screen bg-[#f9f7f4] p-8">
@@ -36,6 +82,9 @@ export default async function PortalPage() {
             </form>
           </div>
         </div>
+
+        {/* Onboarding checklist */}
+        {showOnboarding && <OnboardingChecklist steps={onboardingSteps} />}
 
         {/* Page list */}
         {pages.length === 0 ? (

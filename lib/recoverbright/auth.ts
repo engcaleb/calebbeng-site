@@ -23,6 +23,7 @@ export type DoctorWithPractice = {
   auth_user_id: string;
   practice_id: string;
   created_at: string;
+  onboarding_dismissed: boolean;
   practice: {
     id: string;
     name: string;
