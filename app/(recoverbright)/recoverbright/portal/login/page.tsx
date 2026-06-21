@@ -53,6 +53,15 @@ export default async function LoginPage({
           </button>
         </form>
 
+        <p className="mt-3 text-right">
+          <Link
+            href="/recoverbright/portal/forgot-password"
+            className="text-[13px] text-[#1c1a17]/50 underline underline-offset-2 hover:text-[#1c1a17]"
+          >
+            Forgot password?
+          </Link>
+        </p>
+
         <p className="mt-6 text-center text-[13px] text-[#1c1a17]/50">
           New practice?{" "}
           <Link
