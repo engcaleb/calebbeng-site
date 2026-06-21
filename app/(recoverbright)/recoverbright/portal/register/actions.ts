@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { validatePassword } from "@/lib/recoverbright/password";
+import { notifyNewSignup } from "@/lib/recoverbright/email";
 
 function slugify(name: string): string {
   return name
@@ -91,6 +92,8 @@ export async function registerAction(formData: FormData) {
   if (doctorError) {
     errorRedirect("Failed to set up your account. Please try again.");
   }
+
+  notifyNewSignup({ practiceName, doctorName, email });
 
   // Sign the new user in — admin.createUser doesn't set a session cookie
   const supabase = await createClient();
