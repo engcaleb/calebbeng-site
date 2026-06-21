@@ -19,7 +19,7 @@ export default async function EditPagePage({ params }: { params: Params }) {
     getActiveProducts(),
   ]);
 
-  const page = await getPageForEditor(pageId, doctor.id);
+  const page = await getPageForEditor(pageId, doctor.practice_id);
   if (!page) notFound();
 
   const defaultProductIds = await getDefaultProductIds(page.surgery_type);

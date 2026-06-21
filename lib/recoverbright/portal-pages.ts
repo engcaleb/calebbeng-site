@@ -25,6 +25,8 @@ export type MyPage = {
   surgery_type: string;
   is_published: boolean;
   product_count: number;
+  doctor_name: string;
+  doctor_slug: string;
 };
 
 export type PageProductForEditor = {
@@ -54,38 +56,61 @@ export type PdfProduct = {
 export type PageForPdf = {
   surgery_type: string;
   practice_name: string;
+  practice_slug: string;
   practice_logo_url: string | null;
   products: PdfProduct[];
 };
 
-export async function getMyPages(doctorId: string): Promise<MyPage[]> {
+export async function getPracticePages(practiceId: string): Promise<MyPage[]> {
   const supabase = await createClient();
+
+  const { data: doctors } = await supabase
+    .from("rw_doctors")
+    .select("id, name, slug")
+    .eq("practice_id", practiceId);
+  if (!doctors?.length) return [];
+
+  const doctorMap = new Map(doctors.map((d) => [d.id, d]));
+
   const { data, error } = await supabase
     .from("rw_recommendation_pages")
-    .select("id, surgery_type, is_published, rw_page_products(id)")
-    .eq("doctor_id", doctorId)
+    .select("id, surgery_type, is_published, doctor_id, rw_page_products(id)")
+    .in("doctor_id", doctors.map((d) => d.id))
     .order("created_at", { ascending: true });
   if (error) throw error;
-  return (data ?? []).map((p) => ({
-    id: p.id,
-    surgery_type: p.surgery_type,
-    is_published: p.is_published,
-    product_count: Array.isArray(p.rw_page_products)
-      ? p.rw_page_products.length
-      : 0,
-  }));
+
+  return (data ?? []).map((p) => {
+    const doc = doctorMap.get(p.doctor_id);
+    return {
+      id: p.id,
+      surgery_type: p.surgery_type,
+      is_published: p.is_published,
+      product_count: Array.isArray(p.rw_page_products)
+        ? p.rw_page_products.length
+        : 0,
+      doctor_name: doc?.name ?? "",
+      doctor_slug: doc?.slug ?? "",
+    };
+  });
 }
 
 export async function getPageForEditor(
   pageId: string,
-  doctorId: string
+  practiceId: string
 ): Promise<PageForEditor | null> {
   const supabase = await createClient();
+
+  const { data: doctors } = await supabase
+    .from("rw_doctors")
+    .select("id")
+    .eq("practice_id", practiceId);
+  if (!doctors?.length) return null;
+
   const { data: page, error } = await supabase
     .from("rw_recommendation_pages")
     .select("id, surgery_type, is_published, doctor_id, show_doctor")
     .eq("id", pageId)
-    .eq("doctor_id", doctorId)
+    .in("doctor_id", doctors.map((d) => d.id))
     .single();
   if (error || !page) return null;
 
@@ -115,34 +140,35 @@ export async function getDefaultProductIds(
 
 export async function getPageForPdf(
   pageId: string,
-  doctorId: string
-): Promise<PageForPdf | null> {
+  practiceId: string
+): Promise<(PageForPdf & { doctor_name: string; doctor_slug: string }) | null> {
   const supabase = await createClient();
 
-  // Run page ownership check + practice lookup in parallel
-  const [pageResult, doctorResult] = await Promise.all([
+  const { data: doctors } = await supabase
+    .from("rw_doctors")
+    .select("id, name, slug")
+    .eq("practice_id", practiceId);
+  if (!doctors?.length) return null;
+
+  const [pageResult, practiceResult] = await Promise.all([
     supabase
       .from("rw_recommendation_pages")
-      .select("surgery_type")
+      .select("surgery_type, doctor_id")
       .eq("id", pageId)
-      .eq("doctor_id", doctorId)
+      .in("doctor_id", doctors.map((d) => d.id))
       .single(),
     supabase
-      .from("rw_doctors")
-      .select("practice:rw_practices(name, logo_url)")
-      .eq("id", doctorId)
+      .from("rw_practices")
+      .select("name, slug, logo_url")
+      .eq("id", practiceId)
       .single(),
   ]);
 
   if (pageResult.error || !pageResult.data) return null;
-  if (doctorResult.error || !doctorResult.data) return null;
+  if (practiceResult.error || !practiceResult.data) return null;
 
-  // Supabase returns FK joins as array or object — handle both
-  const practiceRaw = doctorResult.data.practice as unknown;
-  const practice = (
-    Array.isArray(practiceRaw) ? practiceRaw[0] : practiceRaw
-  ) as { name: string; logo_url: string | null } | null;
-  if (!practice) return null;
+  const practice = practiceResult.data;
+  const pageDoctor = doctors.find((d) => d.id === pageResult.data.doctor_id)!;
 
   // Load page products with product details
   const { data: rows } = await supabase
@@ -179,7 +205,10 @@ export async function getPageForPdf(
   return {
     surgery_type: pageResult.data.surgery_type,
     practice_name: practice.name,
+    practice_slug: practice.slug,
     practice_logo_url: practice.logo_url,
+    doctor_name: pageDoctor.name,
+    doctor_slug: pageDoctor.slug,
     products,
   };
 }

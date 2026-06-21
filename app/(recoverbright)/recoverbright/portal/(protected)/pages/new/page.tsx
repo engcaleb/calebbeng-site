@@ -1,5 +1,6 @@
 import { requireDoctor } from "@/lib/recoverbright/auth";
-import { getMyPages, getSurgeryTypes } from "@/lib/recoverbright/portal-pages";
+import { getSurgeryTypes } from "@/lib/recoverbright/portal-pages";
+import { createClient } from "@/lib/supabase/server";
 import { createPage } from "../actions";
 import Link from "next/link";
 
@@ -7,12 +8,16 @@ export const metadata = { title: "New Page — Portal" };
 
 export default async function NewPagePage() {
   const doctor = await requireDoctor();
-  const [existing, surgeryTypes] = await Promise.all([
-    getMyPages(doctor.id),
+  const supabase = await createClient();
+  const [{ data: myPages }, surgeryTypes] = await Promise.all([
+    supabase
+      .from("rw_recommendation_pages")
+      .select("surgery_type")
+      .eq("doctor_id", doctor.id),
     getSurgeryTypes(),
   ]);
-  const existingTypes = new Set(existing.map((p) => p.surgery_type));
-  const available = surgeryTypes.filter((t) => !existingTypes.has(t));
+  const existingTypes = new Set((myPages ?? []).map((p: { surgery_type: string }) => p.surgery_type));
+  const available = surgeryTypes.filter((t: string) => !existingTypes.has(t));
 
   return (
     <main className="min-h-screen bg-[#f9f7f4] p-8">

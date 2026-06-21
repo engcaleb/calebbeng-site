@@ -17,7 +17,7 @@ export async function GET(_req: Request, { params }: Params) {
   // requireDoctor redirects to /portal/login if not authenticated
   const doctor = await requireDoctor();
 
-  const page = await getPageForPdf(pageId, doctor.id);
+  const page = await getPageForPdf(pageId, doctor.practice_id);
   if (!page) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
@@ -28,14 +28,14 @@ export async function GET(_req: Request, { params }: Params) {
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-|-$/g, "");
-    const pageUrl = `https://recoverbright.com/dr/${doctor.practice.slug}/${surgerySegment}`;
+    const pageUrl = `https://recoverbright.com/dr/${page.practice_slug}/${page.doctor_slug}/${surgerySegment}`;
     const qrDataUrl = await generateQrDataUrl(pageUrl);
 
     const buffer = await renderToBuffer(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       React.createElement(RecoverBrightDocument, {
         page,
-        doctorName: doctor.name,
+        doctorName: page.doctor_name,
         qrDataUrl,
       }) as React.ReactElement<any>
     );

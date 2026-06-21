@@ -24,6 +24,7 @@ export type PublishedPage = {
   surgery_type: string;
   practice: Practice;
   doctor_name: string;
+  doctor_slug: string;
   show_doctor: boolean;
   products: PageProduct[];
 };
@@ -60,6 +61,7 @@ export function surgeryTypeToUrlSegment(surgeryType: string): string {
 
 export async function getPublishedPage(
   practiceSlug: string,
+  doctorSlug: string,
   surgeryTypeSegment: string
 ): Promise<PublishedPage | null> {
   const supabase = await createClient();
@@ -73,28 +75,24 @@ export async function getPublishedPage(
     .single();
   if (practiceErr || !practice) return null;
 
-  // 2 — doctor(s) for this practice
-  const { data: doctors } = await supabase
+  // 2 — specific doctor by slug
+  const { data: doctor, error: doctorErr } = await supabase
     .from("rw_doctors")
-    .select("id, name")
-    .eq("practice_id", practice.id);
-  if (!doctors?.length) return null;
+    .select("id, name, slug")
+    .eq("practice_id", practice.id)
+    .eq("slug", doctorSlug)
+    .single();
+  if (doctorErr || !doctor) return null;
 
-  const doctorIds = doctors.map((d) => d.id);
-
-  // 3 — published recommendation page
+  // 3 — published recommendation page for this doctor + surgery type
   const { data: page, error: pageErr } = await supabase
     .from("rw_recommendation_pages")
     .select("id, doctor_id, surgery_type, show_doctor")
-    .in("doctor_id", doctorIds)
+    .eq("doctor_id", doctor.id)
     .eq("surgery_type", surgeryType)
     .eq("is_published", true)
-    .order("created_at", { ascending: false })
-    .limit(1)
     .single();
   if (pageErr || !page) return null;
-
-  const doctor = doctors.find((d) => d.id === page.doctor_id)!;
 
   // 4 — page products with product details
   const { data: rows } = await supabase
@@ -135,6 +133,7 @@ export async function getPublishedPage(
     surgery_type: page.surgery_type,
     practice,
     doctor_name: doctor.name,
+    doctor_slug: doctor.slug,
     show_doctor: page.show_doctor,
     products,
   };

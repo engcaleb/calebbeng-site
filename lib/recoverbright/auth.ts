@@ -19,6 +19,7 @@ export const requireAdmin = cache(async (): Promise<void> => {
 export type DoctorWithPractice = {
   id: string;
   name: string;
+  slug: string;
   auth_user_id: string;
   practice_id: string;
   created_at: string;

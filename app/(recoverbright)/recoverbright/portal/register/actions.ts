@@ -14,6 +14,15 @@ function slugify(name: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
+function doctorSlugify(name: string): string {
+  return name
+    .replace(/^Dr\.?\s*/i, "")
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 function errorRedirect(message: string): never {
   redirect(
     `/recoverbright/portal/register?error=${encodeURIComponent(message)}`
@@ -83,9 +92,24 @@ export async function registerAction(formData: FormData) {
     errorRedirect("Failed to set up your practice. Please try again.");
   }
 
+  // Generate unique doctor slug
+  const baseDoctorSlug = doctorSlugify(doctorName) || "doctor";
+  let doctorSlug = baseDoctorSlug;
+  let doctorSuffix = 2;
+  while (true) {
+    const { data: existingDoc } = await service
+      .from("rw_doctors")
+      .select("id")
+      .eq("slug", doctorSlug)
+      .maybeSingle();
+    if (!existingDoc) break;
+    doctorSlug = `${baseDoctorSlug}-${doctorSuffix++}`;
+  }
+
   const { error: doctorError } = await service.from("rw_doctors").insert({
     practice_id: practice.id,
     name: doctorName,
+    slug: doctorSlug,
     auth_user_id: authData.user.id,
   });
 

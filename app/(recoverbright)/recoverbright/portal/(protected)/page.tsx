@@ -1,13 +1,13 @@
 // app/(recoverbright)/recoverbright/portal/(protected)/page.tsx
 import { requireDoctor } from "@/lib/recoverbright/auth";
-import { getMyPages } from "@/lib/recoverbright/portal-pages";
+import { getPracticePages } from "@/lib/recoverbright/portal-pages";
 import { surgeryTypeToUrlSegment } from "@/lib/recoverbright/pages";
 import { logoutAction } from "../login/actions";
 import Link from "next/link";
 
 export default async function PortalPage() {
   const doctor = await requireDoctor();
-  const pages = await getMyPages(doctor.id);
+  const pages = await getPracticePages(doctor.practice.id);
 
   return (
     <main className="min-h-screen bg-[#f9f7f4] p-8">
@@ -54,7 +54,7 @@ export default async function PortalPage() {
           <div className="space-y-3">
             {pages.map((page) => {
               const segment = surgeryTypeToUrlSegment(page.surgery_type);
-              const patientPath = `/dr/${doctor.practice.slug}/${segment}`;
+              const patientPath = `/dr/${doctor.practice.slug}/${page.doctor_slug}/${segment}`;
               return (
                 <div
                   key={page.id}
@@ -66,7 +66,7 @@ export default async function PortalPage() {
                         {page.surgery_type}
                       </p>
                       <p className="mt-0.5 font-mono text-[12px] text-[#1c1a17]/40">
-                        {page.product_count}{" "}
+                        {page.doctor_name} · {page.product_count}{" "}
                         {page.product_count === 1 ? "product" : "products"}
                       </p>
                     </div>

@@ -63,12 +63,16 @@ export async function savePageProducts(
   const doctor = await requireDoctor();
   const supabase = await createClient();
 
-  // Ownership check
+  // Practice membership check
+  const { data: practiceDocIds } = await supabase
+    .from("rw_doctors")
+    .select("id")
+    .eq("practice_id", doctor.practice_id);
   const { data: page } = await supabase
     .from("rw_recommendation_pages")
     .select("id")
     .eq("id", pageId)
-    .eq("doctor_id", doctor.id)
+    .in("doctor_id", (practiceDocIds ?? []).map((d) => d.id))
     .single();
   if (!page) throw new Error("Page not found");
 
@@ -107,11 +111,15 @@ export async function togglePublish(
   const doctor = await requireDoctor();
   const supabase = await createClient();
 
+  const { data: practiceDocIds } = await supabase
+    .from("rw_doctors")
+    .select("id")
+    .eq("practice_id", doctor.practice_id);
   const { error } = await supabase
     .from("rw_recommendation_pages")
     .update({ is_published: !currentIsPublished })
     .eq("id", pageId)
-    .eq("doctor_id", doctor.id);
+    .in("doctor_id", (practiceDocIds ?? []).map((d) => d.id));
 
   if (error) throw new Error("Failed to update publish status");
 
@@ -131,11 +139,15 @@ export async function toggleShowDoctor(
   const doctor = await requireDoctor();
   const supabase = await createClient();
 
+  const { data: practiceDocIds } = await supabase
+    .from("rw_doctors")
+    .select("id")
+    .eq("practice_id", doctor.practice_id);
   const { error } = await supabase
     .from("rw_recommendation_pages")
     .update({ show_doctor: !currentShowDoctor })
     .eq("id", pageId)
-    .eq("doctor_id", doctor.id);
+    .in("doctor_id", (practiceDocIds ?? []).map((d) => d.id));
 
   if (error) throw new Error("Failed to update show_doctor");
 
