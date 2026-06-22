@@ -131,8 +131,11 @@ export function MarkdownEditor({
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(null);
 
   useEffect(() => {
-    setPreviewHtml(marked.parse(content) as string);
-  }, []);
+    setPreviewHtml(marked.parse(defaultValue ?? "") as string);
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [defaultValue]);
 
   const updatePreview = useCallback((md: string) => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
