@@ -3,6 +3,7 @@
 import { useRef, useState, useActionState } from "react";
 import { saveArticle } from "./actions";
 import type { Article } from "@/lib/recoverbright/articles";
+import { MarkdownEditor } from "./MarkdownEditor";
 
 export function ArticleForm({
   article,
@@ -166,16 +167,7 @@ export function ArticleForm({
         )}
       </div>
 
-      <div>
-        <label className="label">Content (Markdown)</label>
-        <textarea
-          name="content"
-          defaultValue={article?.content}
-          rows={20}
-          className="input mt-1 font-mono text-[13px] leading-relaxed"
-          placeholder="Write your article in Markdown..."
-        />
-      </div>
+      <MarkdownEditor defaultValue={article?.content ?? ""} />
 
       {error && (
         <p className="text-[13px] text-red-600">{error}</p>
