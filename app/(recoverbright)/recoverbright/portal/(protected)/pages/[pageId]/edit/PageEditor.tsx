@@ -1,24 +1,27 @@
 "use client";
 
 import { useState, useMemo, useTransition } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { savePageProducts, togglePublish, toggleShowDoctor } from "../../actions";
 import type { PageForEditor } from "@/lib/recoverbright/portal-pages";
 import type { RwProduct } from "@/lib/recoverbright/products";
 
 type ProductState = {
-  custom_instructions: string | null; // null = use admin default
+  custom_instructions: string | null;
   sort_order: number;
 };
 
 export function PageEditor({
   page,
-  allProducts,
+  defaultProducts,
+  nonDefaultProducts,
   practiceSlug,
   defaultProductIds,
 }: {
   page: PageForEditor;
-  allProducts: RwProduct[];
+  defaultProducts: RwProduct[];
+  nonDefaultProducts: RwProduct[];
   practiceSlug: string;
   defaultProductIds: string[];
 }) {
@@ -44,13 +47,15 @@ export function PageEditor({
   const [isShowDoctorPending, startShowDoctorTransition] = useTransition();
   const [search, setSearch] = useState("");
 
-  // Fast lookup: product ID → full product details
+  const allProducts = useMemo(
+    () => [...defaultProducts, ...nonDefaultProducts],
+    [defaultProducts, nonDefaultProducts]
+  );
   const productById = useMemo(
     () => new Map(allProducts.map((p) => [p.id, p])),
     [allProducts]
   );
 
-  // Ordered list of selected entries (by sort_order, matching DB order on load)
   const selectedEntries = useMemo(
     () =>
       Array.from(selected.entries()).sort(
@@ -59,31 +64,24 @@ export function PageEditor({
     [selected]
   );
 
-  const query = search.trim().toLowerCase();
-  const searchResults = useMemo(
-    () =>
-      query
-        ? allProducts.filter(
-            (p) =>
-              !selected.has(p.id) &&
-              (p.name.toLowerCase().includes(query) ||
-                p.category.toLowerCase().includes(query))
-          )
-        : [],
-    [query, allProducts, selected]
-  );
-
-  function toggleProduct(productId: string) {
+  function addProduct(productId: string) {
     setSelected((prev) => {
       const next = new Map(prev);
-      if (next.has(productId)) {
-        next.delete(productId);
-      } else {
+      if (!next.has(productId)) {
         next.set(productId, {
           custom_instructions: null,
           sort_order: next.size,
         });
       }
+      return next;
+    });
+    setSaveStatus("idle");
+  }
+
+  function removeProduct(productId: string) {
+    setSelected((prev) => {
+      const next = new Map(prev);
+      next.delete(productId);
       return next;
     });
     setSaveStatus("idle");
@@ -106,7 +104,6 @@ export function PageEditor({
         const products = Array.from(selected.entries()).map(
           ([product_id, { custom_instructions }], i) => ({
             product_id,
-            // Save null (use default) if empty string
             custom_instructions:
               custom_instructions === "" ? null : custom_instructions,
             sort_order: i,
@@ -135,9 +132,7 @@ export function PageEditor({
           published
         );
         setPublished((p) => !p);
-      } catch {
-        // publish failures are silent — user will see the badge didn't flip
-      }
+      } catch {}
     });
   }
 
@@ -146,9 +141,7 @@ export function PageEditor({
       try {
         await toggleShowDoctor(page.id, practiceSlug, page.surgery_type, showDoctor);
         setShowDoctor((v) => !v);
-      } catch {
-        // silent — badge won't flip if it fails
-      }
+      } catch {}
     });
   }
 
@@ -162,6 +155,8 @@ export function PageEditor({
     setSelected(new Map(entries));
     setSaveStatus("idle");
   }
+
+  const query = search.trim().toLowerCase();
 
   return (
     <div>
@@ -230,8 +225,16 @@ export function PageEditor({
               key={productId}
               className="overflow-hidden rounded-lg border border-[#e8e3da] bg-white"
             >
-              {/* Header row */}
               <div className="flex items-center gap-3 px-4 py-3">
+                {product.image_url && (
+                  <Image
+                    src={product.image_url}
+                    alt=""
+                    width={40}
+                    height={40}
+                    className="h-10 w-10 shrink-0 rounded object-contain"
+                  />
+                )}
                 <div className="flex-1 min-w-0">
                   <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#1c1a17]/35">
                     {product.category}
@@ -242,14 +245,13 @@ export function PageEditor({
                 </div>
                 <button
                   type="button"
-                  onClick={() => toggleProduct(productId)}
+                  onClick={() => removeProduct(productId)}
                   className="shrink-0 font-mono text-[13px] text-[#1c1a17]/25 hover:text-red-500 transition"
                   aria-label={`Remove ${product.name}`}
                 >
                   ✕
                 </button>
               </div>
-              {/* Instructions — always expanded */}
               <div className="border-t border-[#e8e3da] bg-[#faf9f7] px-4 pb-4 pt-3">
                 <InstructionsPanel
                   defaultInstructions={product.default_instructions}
@@ -262,56 +264,21 @@ export function PageEditor({
         })}
         {selectedEntries.length === 0 && (
           <p className="py-8 text-center font-mono text-[12px] text-[#1c1a17]/30">
-            No products yet — search below to add some.
+            No products yet — browse below to add some.
           </p>
         )}
       </div>
 
       {/* ── Add products ──────────────────────────────────── */}
-      <div className="mt-4">
-        <input
-          type="search"
-          placeholder="Search products to add…"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="input w-full"
-        />
-        {query && (
-          <div className="mt-2 space-y-1">
-            {searchResults.length === 0 ? (
-              <p className="py-4 text-center font-mono text-[12px] text-[#1c1a17]/30">
-                No products found
-              </p>
-            ) : (
-              searchResults.map((product) => (
-                <div
-                  key={product.id}
-                  className="flex items-center gap-3 rounded-lg border border-[#e8e3da] bg-white px-4 py-3"
-                >
-                  <div className="flex-1 min-w-0">
-                    <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#1c1a17]/35">
-                      {product.category}
-                    </p>
-                    <p className="text-[14px] font-medium text-[#1c1a17]">
-                      {product.name}
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      toggleProduct(product.id);
-                      setSearch("");
-                    }}
-                    className="shrink-0 font-mono text-[12px] text-[#1c1a17]/50 hover:text-[#1c1a17] transition"
-                  >
-                    + Add
-                  </button>
-                </div>
-              ))
-            )}
-          </div>
-        )}
-      </div>
+      <AddProductsSection
+        defaultProducts={defaultProducts}
+        nonDefaultProducts={nonDefaultProducts}
+        selected={selected}
+        search={search}
+        query={query}
+        onSearchChange={setSearch}
+        onAdd={addProduct}
+      />
 
       {/* ── Save bar ────────────────────────────────────────── */}
       <div className="mt-10 flex items-center gap-4 border-t border-[#e8e3da] pt-6">
@@ -350,82 +317,290 @@ function InstructionsPanel({
   onChange,
 }: {
   defaultInstructions: string | null;
-  customInstructions: string | null; // null = use default
+  customInstructions: string | null;
   onChange: (value: string | null) => void;
 }) {
-  // null = showing default (or empty prompt); string = customizing
-  const isCustomizing = customInstructions !== null;
+  const [editing, setEditing] = useState(false);
+  const displayText = customInstructions ?? defaultInstructions;
+  const isCustomized = customInstructions !== null;
 
-  if (!isCustomizing) {
-    if (defaultInstructions) {
-      // State 1: default exists, showing it read-only
+  if (!editing) {
+    if (displayText) {
       return (
         <div>
           <p className="mb-1 font-mono text-[10px] uppercase tracking-[0.18em] text-[#1c1a17]/35">
-            Default instructions · set by admin
+            Instructions
+            {!isCustomized && defaultInstructions && (
+              <span className="normal-case tracking-normal text-[#1c1a17]/25">
+                {" "}· default
+              </span>
+            )}
           </p>
           <p className="text-[13px] leading-relaxed text-[#1c1a17]/60">
-            {defaultInstructions}
+            {displayText}
           </p>
           <button
             type="button"
-            onClick={() => onChange("")}
+            onClick={() => setEditing(true)}
             className="mt-2 font-mono text-[11px] text-[#1c1a17]/40 underline underline-offset-2 hover:text-[#1c1a17]"
           >
-            Customize
+            Edit
           </button>
         </div>
       );
     }
-    // State 3: no default — optional free-text
     return (
-      <div>
-        <p className="mb-1 font-mono text-[10px] uppercase tracking-[0.18em] text-[#1c1a17]/35">
-          Instructions{" "}
-          <span className="normal-case tracking-normal text-[#1c1a17]/25">
-            (optional)
-          </span>
-        </p>
-        <textarea
-          rows={2}
-          placeholder="Add instructions for this product…"
-          className="input resize-none"
-          onChange={(e) => onChange(e.target.value || null)}
-        />
-      </div>
+      <button
+        type="button"
+        onClick={() => setEditing(true)}
+        className="font-mono text-[11px] text-[#1c1a17]/35 underline underline-offset-2 hover:text-[#1c1a17]"
+      >
+        Add instructions
+      </button>
     );
   }
 
-  // State 2: customizing
   return (
     <div>
       <p className="mb-1 font-mono text-[10px] uppercase tracking-[0.18em] text-[#1c1a17]/35">
-        Custom instructions
+        Instructions
       </p>
       <textarea
         rows={2}
-        value={customInstructions}
+        value={customInstructions ?? defaultInstructions ?? ""}
         autoFocus
-        placeholder="Your instructions for this product…"
+        placeholder="Instructions for this product…"
         className="input resize-none"
         onChange={(e) => onChange(e.target.value)}
       />
-      <div className="mt-1.5 flex items-start justify-between gap-4">
-        {defaultInstructions && (
+      <div className="mt-1.5 flex items-center gap-4">
+        <button
+          type="button"
+          onClick={() => setEditing(false)}
+          className="font-mono text-[11px] text-[#1c1a17]/40 underline underline-offset-2 hover:text-[#1c1a17] transition"
+        >
+          Done
+        </button>
+        {defaultInstructions && isCustomized && customInstructions !== defaultInstructions && (
           <button
             type="button"
-            onClick={() => onChange(null)}
+            onClick={() => {
+              onChange(null);
+              setEditing(false);
+            }}
             className="font-mono text-[11px] text-[#1c1a17]/40 underline underline-offset-2 hover:text-[#1c1a17] transition"
           >
-            ↩ Reset to default
+            Reset to default
           </button>
         )}
-        {defaultInstructions && (
-          <p className="text-right text-[11px] leading-relaxed text-[#1c1a17]/28">
-            Default: {defaultInstructions}
-          </p>
-        )}
       </div>
+    </div>
+  );
+}
+
+// ── AddProductsSection + CategorySection ──────────────────────────────────
+
+function groupByCategory(products: RwProduct[]): { category: string; products: RwProduct[] }[] {
+  const map = new Map<string, RwProduct[]>();
+  for (const p of products) {
+    const list = map.get(p.category) ?? [];
+    list.push(p);
+    map.set(p.category, list);
+  }
+  return Array.from(map.entries()).map(([category, products]) => ({
+    category,
+    products,
+  }));
+}
+
+function AddProductsSection({
+  defaultProducts,
+  nonDefaultProducts,
+  selected,
+  search,
+  query,
+  onSearchChange,
+  onAdd,
+}: {
+  defaultProducts: RwProduct[];
+  nonDefaultProducts: RwProduct[];
+  selected: Map<string, ProductState>;
+  search: string;
+  query: string;
+  onSearchChange: (value: string) => void;
+  onAdd: (productId: string) => void;
+}) {
+  const [othersOpen, setOthersOpen] = useState(false);
+
+  const filteredDefaults = useMemo(
+    () =>
+      query
+        ? defaultProducts.filter(
+            (p) =>
+              p.name.toLowerCase().includes(query) ||
+              p.category.toLowerCase().includes(query)
+          )
+        : defaultProducts,
+    [query, defaultProducts]
+  );
+
+  const filteredOthers = useMemo(
+    () =>
+      query
+        ? nonDefaultProducts.filter(
+            (p) =>
+              p.name.toLowerCase().includes(query) ||
+              p.category.toLowerCase().includes(query)
+          )
+        : nonDefaultProducts,
+    [query, nonDefaultProducts]
+  );
+
+  const defaultGroups = useMemo(
+    () => groupByCategory(filteredDefaults),
+    [filteredDefaults]
+  );
+  const otherGroups = useMemo(
+    () => groupByCategory(filteredOthers),
+    [filteredOthers]
+  );
+
+  return (
+    <div className="mt-8">
+      <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.22em] text-[#1c1a17]/35">
+        Add Products
+      </p>
+      <input
+        type="search"
+        placeholder="Search products..."
+        value={search}
+        onChange={(e) => onSearchChange(e.target.value)}
+        className="input w-full mb-3"
+      />
+
+      {/* Tier 1: defaults for this surgery type */}
+      {defaultGroups.map((group) => (
+        <CategorySection
+          key={group.category}
+          category={group.category}
+          products={group.products}
+          selected={selected}
+          onAdd={onAdd}
+          defaultOpen={true}
+        />
+      ))}
+
+      {/* Tier 2: all other products */}
+      {otherGroups.length > 0 && (
+        <div className="mt-2">
+          <button
+            type="button"
+            onClick={() => setOthersOpen((v) => !v)}
+            className="flex w-full items-center justify-between rounded-lg border border-[#e8e3da] bg-white px-4 py-3 text-left transition hover:bg-[#faf9f7]"
+          >
+            <span className="font-mono text-[11px] text-[#1c1a17]/50">
+              All other products · {filteredOthers.length}
+            </span>
+            <span className="font-mono text-[12px] text-[#1c1a17]/30">
+              {othersOpen ? "▾" : "▸"}
+            </span>
+          </button>
+          {othersOpen && (
+            <div className="mt-2">
+              {otherGroups.map((group) => (
+                <CategorySection
+                  key={group.category}
+                  category={group.category}
+                  products={group.products}
+                  selected={selected}
+                  onAdd={onAdd}
+                  defaultOpen={true}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {defaultGroups.length === 0 && filteredOthers.length === 0 && query && (
+        <p className="py-4 text-center font-mono text-[12px] text-[#1c1a17]/30">
+          No products found
+        </p>
+      )}
+    </div>
+  );
+}
+
+function CategorySection({
+  category,
+  products,
+  selected,
+  onAdd,
+  defaultOpen,
+}: {
+  category: string;
+  products: RwProduct[];
+  selected: Map<string, ProductState>;
+  onAdd: (productId: string) => void;
+  defaultOpen: boolean;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+
+  return (
+    <div className="mb-2">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center justify-between rounded-lg border border-[#e8e3da] bg-white px-4 py-2.5 text-left transition hover:bg-[#faf9f7]"
+      >
+        <span className="font-mono text-[11px] text-[#1c1a17]/50">
+          {category} · {products.length}
+        </span>
+        <span className="font-mono text-[12px] text-[#1c1a17]/30">
+          {open ? "▾" : "▸"}
+        </span>
+      </button>
+      {open && (
+        <div className="mt-1 space-y-1">
+          {products.map((product) => {
+            const isSelected = selected.has(product.id);
+            return (
+              <div
+                key={product.id}
+                className={`flex items-center gap-3 rounded-lg border border-[#e8e3da] px-4 py-2.5 ${
+                  isSelected ? "bg-[#f9f7f4] opacity-50" : "bg-white"
+                }`}
+              >
+                {product.image_url && (
+                  <Image
+                    src={product.image_url}
+                    alt=""
+                    width={32}
+                    height={32}
+                    className="h-8 w-8 shrink-0 rounded object-contain"
+                  />
+                )}
+                <p className="flex-1 min-w-0 text-[13px] text-[#1c1a17]">
+                  {product.name}
+                </p>
+                {isSelected ? (
+                  <span className="shrink-0 font-mono text-[12px] text-green-600">
+                    ✓
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => onAdd(product.id)}
+                    className="shrink-0 font-mono text-[12px] text-[#1c1a17]/50 hover:text-[#1c1a17] transition"
+                  >
+                    + Add
+                  </button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
