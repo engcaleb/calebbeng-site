@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import type { RwProduct } from "@/lib/recoverbright/products";
 
 export const DEFAULT_SURGERY_TYPES = [
   "LASIK",
@@ -211,4 +212,56 @@ export async function getPageForPdf(
     doctor_slug: pageDoctor.slug,
     products,
   };
+}
+
+export async function getDefaultProductsForSurgeryType(
+  surgeryType: string
+): Promise<RwProduct[]> {
+  const supabase = await createClient();
+  const { data: defaults } = await supabase
+    .from("rw_default_products")
+    .select("product_id, sort_order")
+    .eq("surgery_type", surgeryType)
+    .order("sort_order", { ascending: true });
+  if (!defaults?.length) return [];
+
+  const ids = defaults.map((d) => d.product_id);
+  const { data: products, error } = await supabase
+    .from("rw_products")
+    .select("*")
+    .in("id", ids)
+    .eq("is_active", true);
+  if (error || !products) return [];
+
+  // Preserve default sort order
+  const orderMap = new Map(defaults.map((d) => [d.product_id, d.sort_order]));
+  return products.sort(
+    (a, b) => (orderMap.get(a.id) ?? 0) - (orderMap.get(b.id) ?? 0)
+  );
+}
+
+export async function getNonDefaultProducts(
+  surgeryType: string
+): Promise<RwProduct[]> {
+  const supabase = await createClient();
+  const { data: defaults } = await supabase
+    .from("rw_default_products")
+    .select("product_id")
+    .eq("surgery_type", surgeryType);
+  const excludeIds = (defaults ?? []).map((d) => d.product_id);
+
+  let query = supabase
+    .from("rw_products")
+    .select("*")
+    .eq("is_active", true)
+    .order("category", { ascending: true })
+    .order("sort_order", { ascending: true });
+
+  if (excludeIds.length > 0) {
+    query = query.not("id", "in", `(${excludeIds.join(",")})`);
+  }
+
+  const { data, error } = await query;
+  if (error || !data) return [];
+  return data;
 }

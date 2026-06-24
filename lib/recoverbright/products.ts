@@ -46,3 +46,16 @@ export async function getActiveProducts(): Promise<RwProduct[]> {
   if (error) throw error;
   return data ?? [];
 }
+
+export async function getDefaultProductCounts(): Promise<Record<string, number>> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("rw_default_products")
+    .select("surgery_type");
+  if (error || !data) return {};
+  const counts: Record<string, number> = {};
+  for (const row of data) {
+    counts[row.surgery_type] = (counts[row.surgery_type] ?? 0) + 1;
+  }
+  return counts;
+}
