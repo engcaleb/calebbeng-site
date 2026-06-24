@@ -1,5 +1,6 @@
 import { requireDoctor } from "@/lib/recoverbright/auth";
 import { getSurgeryTypes } from "@/lib/recoverbright/portal-pages";
+import { getDefaultProductCounts } from "@/lib/recoverbright/products";
 import { createClient } from "@/lib/supabase/server";
 import { createPage } from "../actions";
 import Link from "next/link";
@@ -9,14 +10,17 @@ export const metadata = { title: "New Page — Portal" };
 export default async function NewPagePage() {
   const doctor = await requireDoctor();
   const supabase = await createClient();
-  const [{ data: myPages }, surgeryTypes] = await Promise.all([
+  const [{ data: myPages }, surgeryTypes, productCounts] = await Promise.all([
     supabase
       .from("rw_recommendation_pages")
       .select("surgery_type")
       .eq("doctor_id", doctor.id),
     getSurgeryTypes(),
+    getDefaultProductCounts(),
   ]);
-  const existingTypes = new Set((myPages ?? []).map((p: { surgery_type: string }) => p.surgery_type));
+  const existingTypes = new Set(
+    (myPages ?? []).map((p: { surgery_type: string }) => p.surgery_type)
+  );
   const available = surgeryTypes.filter((t: string) => !existingTypes.has(t));
 
   return (
@@ -46,20 +50,25 @@ export default async function NewPagePage() {
           </div>
         ) : (
           <div className="space-y-2">
-            {available.map((type) => (
-              <form key={type} action={createPage}>
-                <input type="hidden" name="surgeryType" value={type} />
-                <button
-                  type="submit"
-                  className="w-full rounded-xl border border-[#e8e3da] bg-white px-6 py-5 text-left transition hover:border-[#1c1a17]/25 hover:bg-[#f0ede8]"
-                >
-                  <span className="font-medium text-[#1c1a17]">{type}</span>
-                  <span className="ml-2 font-mono text-[12px] text-[#1c1a17]/35">
-                    recovery recommendations
-                  </span>
-                </button>
-              </form>
-            ))}
+            {available.map((type) => {
+              const count = productCounts[type] ?? 0;
+              return (
+                <form key={type} action={createPage}>
+                  <input type="hidden" name="surgeryType" value={type} />
+                  <button
+                    type="submit"
+                    className="w-full rounded-xl border border-[#e8e3da] bg-white px-6 py-5 text-left transition hover:border-[#1c1a17]/25 hover:bg-[#f0ede8]"
+                  >
+                    <span className="font-medium text-[#1c1a17]">{type}</span>
+                    <span className="ml-2 font-mono text-[12px] text-[#1c1a17]/35">
+                      {count > 0
+                        ? `${count} product${count === 1 ? "" : "s"}`
+                        : "recovery recommendations"}
+                    </span>
+                  </button>
+                </form>
+              );
+            })}
           </div>
         )}
       </div>
