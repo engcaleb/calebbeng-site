@@ -41,7 +41,7 @@ export async function upsertProduct(formData: FormData) {
     if (error) throw new Error(error.message);
   }
 
-  if (oldImageUrl && !payload.image_url) {
+  if (oldImageUrl && oldImageUrl !== payload.image_url) {
     const path = storagePathFromUrl(oldImageUrl, "product-images");
     if (path) {
       await supabase.storage.from("product-images").remove([path]);
@@ -49,6 +49,7 @@ export async function upsertProduct(formData: FormData) {
   }
 
   revalidatePath("/recoverbright/admin/products");
+  revalidatePath("/recoverbright", "layout");
   redirect("/recoverbright/admin/products");
 }
 
@@ -65,4 +66,5 @@ export async function toggleProductActive(formData: FormData) {
   if (error) throw new Error(error.message);
 
   revalidatePath("/recoverbright/admin/products");
+  revalidatePath("/recoverbright", "layout");
 }
