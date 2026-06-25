@@ -15,12 +15,14 @@ export async function createPage(formData: FormData) {
   if (!validTypes.includes(surgeryType))
     throw new Error("Invalid surgery type");
 
+  const showDoctor = formData.get("showDoctor") !== "false";
+
   const doctor = await requireDoctor();
   const supabase = await createClient();
 
   const { data, error } = await supabase
     .from("rw_recommendation_pages")
-    .insert({ doctor_id: doctor.id, surgery_type: surgeryType, is_published: false })
+    .insert({ doctor_id: doctor.id, surgery_type: surgeryType, is_published: false, show_doctor: showDoctor })
     .select("id")
     .single();
 
@@ -45,6 +47,110 @@ export async function createPage(formData: FormData) {
   }
 
   redirect(`/recoverbright/portal/pages/${data.id}/edit`);
+}
+
+export async function copyPage(formData: FormData) {
+  const sourcePageId = formData.get("sourcePageId") as string;
+  if (!sourcePageId) throw new Error("Missing sourcePageId");
+  const asPracticeWide = formData.get("asPracticeWide") === "true";
+
+  const doctor = await requireDoctor();
+  const supabase = await createClient();
+
+  // Verify source page belongs to same practice
+  const { data: practiceDocIds } = await supabase
+    .from("rw_doctors")
+    .select("id")
+    .eq("practice_id", doctor.practice_id);
+  if (!practiceDocIds?.length) throw new Error("No doctors in practice");
+  const docIds = practiceDocIds.map((d) => d.id);
+
+  const { data: sourcePage } = await supabase
+    .from("rw_recommendation_pages")
+    .select("id, surgery_type")
+    .eq("id", sourcePageId)
+    .in("doctor_id", docIds)
+    .single();
+  if (!sourcePage) throw new Error("Source page not found");
+
+  // Load source products
+  const { data: sourceProducts } = await supabase
+    .from("rw_page_products")
+    .select("product_id, custom_instructions, sort_order")
+    .eq("page_id", sourcePageId)
+    .order("sort_order", { ascending: true });
+
+  const showDoctor = !asPracticeWide;
+
+  // Check for existing page of the same type
+  let existingPageId: string | null = null;
+  if (asPracticeWide) {
+    // Practice-wide: check if any doctor in practice has one
+    const { data: existing } = await supabase
+      .from("rw_recommendation_pages")
+      .select("id")
+      .in("doctor_id", docIds)
+      .eq("surgery_type", sourcePage.surgery_type)
+      .eq("show_doctor", false)
+      .limit(1)
+      .single();
+    existingPageId = existing?.id ?? null;
+  } else {
+    // Doctor-specific: check if current doctor has one
+    const { data: existing } = await supabase
+      .from("rw_recommendation_pages")
+      .select("id")
+      .eq("doctor_id", doctor.id)
+      .eq("surgery_type", sourcePage.surgery_type)
+      .eq("show_doctor", true)
+      .limit(1)
+      .single();
+    existingPageId = existing?.id ?? null;
+  }
+
+  let targetPageId: string;
+
+  if (existingPageId) {
+    // Replace products on existing page
+    targetPageId = existingPageId;
+    const { error: deleteError } = await supabase
+      .from("rw_page_products")
+      .delete()
+      .eq("page_id", existingPageId);
+    if (deleteError) throw new Error("Failed to clear existing products");
+  } else {
+    // Create new page
+    const { data: newPage, error: createError } = await supabase
+      .from("rw_recommendation_pages")
+      .insert({
+        doctor_id: doctor.id,
+        surgery_type: sourcePage.surgery_type,
+        is_published: false,
+        show_doctor: showDoctor,
+      })
+      .select("id")
+      .single();
+    if (createError || !newPage) throw new Error("Failed to create page");
+    targetPageId = newPage.id;
+  }
+
+  // Insert copied products
+  if (sourceProducts && sourceProducts.length > 0) {
+    const { error: insertError } = await supabase
+      .from("rw_page_products")
+      .insert(
+        sourceProducts.map((p) => ({
+          page_id: targetPageId,
+          product_id: p.product_id,
+          custom_instructions: p.custom_instructions,
+          sort_order: p.sort_order,
+        }))
+      );
+    if (insertError) throw new Error("Failed to copy products");
+  }
+
+  revalidatePath("/recoverbright/portal");
+  redirect(`/recoverbright/portal/pages/${targetPageId}/edit`);
 }
 
 type SaveProduct = {
@@ -129,29 +235,3 @@ export async function togglePublish(
   revalidatePath("/recoverbright/portal");
 }
 
-// Called from PageEditor client component via useTransition
-export async function toggleShowDoctor(
-  pageId: string,
-  practiceSlug: string,
-  surgeryType: string,
-  currentShowDoctor: boolean
-) {
-  const doctor = await requireDoctor();
-  const supabase = await createClient();
-
-  const { data: practiceDocIds } = await supabase
-    .from("rw_doctors")
-    .select("id")
-    .eq("practice_id", doctor.practice_id);
-  const { error } = await supabase
-    .from("rw_recommendation_pages")
-    .update({ show_doctor: !currentShowDoctor })
-    .eq("id", pageId)
-    .in("doctor_id", (practiceDocIds ?? []).map((d) => d.id));
-
-  if (error) throw new Error("Failed to update show_doctor");
-
-  revalidatePath(
-    `/recoverbright/dr/${practiceSlug}/${surgeryTypeToUrlSegment(surgeryType)}`
-  );
-}
