@@ -144,7 +144,7 @@ export async function getDefaultProductIds(
 export async function getPageForPdf(
   pageId: string,
   practiceId: string
-): Promise<(PageForPdf & { doctor_name: string; doctor_slug: string }) | null> {
+): Promise<(PageForPdf & { doctor_name: string; doctor_slug: string; show_doctor: boolean }) | null> {
   const supabase = await createClient();
 
   const { data: doctors } = await supabase
@@ -156,7 +156,7 @@ export async function getPageForPdf(
   const [pageResult, practiceResult] = await Promise.all([
     supabase
       .from("rw_recommendation_pages")
-      .select("surgery_type, doctor_id")
+      .select("surgery_type, doctor_id, show_doctor")
       .eq("id", pageId)
       .in("doctor_id", doctors.map((d) => d.id))
       .single(),
@@ -207,6 +207,7 @@ export async function getPageForPdf(
 
   return {
     surgery_type: pageResult.data.surgery_type,
+    show_doctor: pageResult.data.show_doctor,
     practice_name: practice.name,
     practice_slug: practice.slug,
     practice_logo_url: practice.logo_url,

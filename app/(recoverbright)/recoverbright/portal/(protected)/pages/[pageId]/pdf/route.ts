@@ -23,12 +23,14 @@ export async function GET(_req: Request, { params }: Params) {
   }
 
   try {
-    // Single QR linking to the doctor's hosted recommendation page
+    // Single QR linking to the hosted patient page — URL shape depends on page type
     const surgerySegment = page.surgery_type
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-|-$/g, "");
-    const pageUrl = `https://recoverbright.com/dr/${page.practice_slug}/${page.doctor_slug}/${surgerySegment}`;
+    const pageUrl = page.show_doctor
+      ? `https://recoverbright.com/dr/${page.practice_slug}/${page.doctor_slug}/${surgerySegment}`
+      : `https://recoverbright.com/dr/${page.practice_slug}/${surgerySegment}`;
     const qrDataUrl = await generateQrDataUrl(pageUrl);
 
     const buffer = await renderToBuffer(
