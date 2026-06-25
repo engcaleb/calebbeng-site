@@ -38,6 +38,7 @@ export default async function EditPagePage({ params }: { params: Params }) {
           nonDefaultProducts={nonDefaultProducts}
           practiceSlug={doctor.practice.slug}
           defaultProductIds={defaultProductIds}
+          doctorName={doctor.name}
         />
       </div>
     </main>

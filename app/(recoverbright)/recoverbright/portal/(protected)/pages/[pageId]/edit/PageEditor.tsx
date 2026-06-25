@@ -3,7 +3,7 @@
 import { useState, useMemo, useTransition } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { savePageProducts, togglePublish, toggleShowDoctor } from "../../actions";
+import { savePageProducts, togglePublish } from "../../actions";
 import type { PageForEditor } from "@/lib/recoverbright/portal-pages";
 import type { RwProduct } from "@/lib/recoverbright/products";
 
@@ -18,12 +18,14 @@ export function PageEditor({
   nonDefaultProducts,
   practiceSlug,
   defaultProductIds,
+  doctorName,
 }: {
   page: PageForEditor;
   defaultProducts: RwProduct[];
   nonDefaultProducts: RwProduct[];
   practiceSlug: string;
   defaultProductIds: string[];
+  doctorName: string;
 }) {
   const [selected, setSelected] = useState<Map<string, ProductState>>(
     () =>
@@ -38,13 +40,11 @@ export function PageEditor({
       )
   );
   const [published, setPublished] = useState(page.is_published);
-  const [showDoctor, setShowDoctor] = useState(page.show_doctor);
   const [saveStatus, setSaveStatus] = useState<
     "idle" | "saving" | "saved" | "error"
   >("idle");
   const [isSavePending, startSaveTransition] = useTransition();
   const [isPublishPending, startPublishTransition] = useTransition();
-  const [isShowDoctorPending, startShowDoctorTransition] = useTransition();
   const [search, setSearch] = useState("");
 
   const allProducts = useMemo(
@@ -136,15 +136,6 @@ export function PageEditor({
     });
   }
 
-  function handleToggleShowDoctor() {
-    startShowDoctorTransition(async () => {
-      try {
-        await toggleShowDoctor(page.id, practiceSlug, page.surgery_type, showDoctor);
-        setShowDoctor((v) => !v);
-      } catch {}
-    });
-  }
-
   function handleRestoreDefaults() {
     const entries: [string, ProductState][] = [];
     defaultProductIds.forEach((id, i) => {
@@ -174,17 +165,15 @@ export function PageEditor({
           </h1>
         </div>
         <div className="mt-1 flex shrink-0 gap-2">
-          <button
-            onClick={handleToggleShowDoctor}
-            disabled={isShowDoctorPending}
-            className={`rounded-full px-3 py-1 font-mono text-[12px] transition disabled:opacity-50 ${
-              showDoctor
-                ? "bg-[#1c1a17]/6 text-[#1c1a17]/40 hover:bg-[#1c1a17]/10"
-                : "bg-blue-50 text-blue-700 hover:bg-blue-100"
+          <span
+            className={`rounded-full px-3 py-1 font-mono text-[12px] ${
+              page.show_doctor
+                ? "bg-[#1c1a17]/6 text-[#1c1a17]/40"
+                : "bg-blue-50 text-blue-700"
             }`}
           >
-            {isShowDoctorPending ? "…" : showDoctor ? "My name shown" : "Practice-wide"}
-          </button>
+            {page.show_doctor ? `${doctorName}'s page` : "Practice page"}
+          </span>
           <button
             onClick={handleTogglePublish}
             disabled={isPublishPending}
