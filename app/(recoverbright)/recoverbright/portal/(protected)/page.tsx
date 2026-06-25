@@ -1,8 +1,8 @@
-// app/(recoverbright)/recoverbright/portal/(protected)/page.tsx
 import { requireDoctor } from "@/lib/recoverbright/auth";
 import { getPracticePages } from "@/lib/recoverbright/portal-pages";
 import { surgeryTypeToUrlSegment } from "@/lib/recoverbright/pages";
 import { logoutAction } from "../login/actions";
+import { copyPage } from "./pages/actions";
 import { OnboardingChecklist } from "./OnboardingChecklist";
 import Link from "next/link";
 
@@ -10,14 +10,18 @@ export default async function PortalPage() {
   const doctor = await requireDoctor();
   const pages = await getPracticePages(doctor.practice.id);
 
-  const myPages = pages.filter((p) => p.doctor_slug === doctor.slug);
+  const myPages = pages.filter(
+    (p) => p.doctor_slug === doctor.slug || !p.show_doctor
+  );
   const hasLogo = !!doctor.practice.logo_url;
   const hasPage = myPages.length > 0;
   const hasPublishedPage = myPages.some((p) => p.is_published);
 
   const firstPublishedPage = myPages.find((p) => p.is_published);
   const shareUrl = firstPublishedPage
-    ? `/dr/${doctor.practice.slug}/${doctor.slug}/${surgeryTypeToUrlSegment(firstPublishedPage.surgery_type)}`
+    ? firstPublishedPage.show_doctor
+      ? `/dr/${doctor.practice.slug}/${doctor.slug}/${surgeryTypeToUrlSegment(firstPublishedPage.surgery_type)}`
+      : `/dr/${doctor.practice.slug}/${surgeryTypeToUrlSegment(firstPublishedPage.surgery_type)}`
     : null;
 
   const onboardingSteps = [
@@ -103,21 +107,36 @@ export default async function PortalPage() {
           <div className="space-y-3">
             {pages.map((page) => {
               const segment = surgeryTypeToUrlSegment(page.surgery_type);
-              const patientPath = `/dr/${doctor.practice.slug}/${page.doctor_slug}/${segment}`;
+              const patientPath = page.show_doctor
+                ? `/dr/${doctor.practice.slug}/${page.doctor_slug}/${segment}`
+                : `/dr/${doctor.practice.slug}/${segment}`;
+              const isOtherDoctor =
+                page.doctor_slug !== doctor.slug && page.show_doctor;
               return (
                 <div
                   key={page.id}
                   className="rounded-xl border border-[#e8e3da] bg-white px-6 py-5"
                 >
                   <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium text-[#1c1a17]">
-                        {page.surgery_type}
-                      </p>
-                      <p className="mt-0.5 font-mono text-[12px] text-[#1c1a17]/40">
-                        {page.doctor_name} · {page.product_count}{" "}
-                        {page.product_count === 1 ? "product" : "products"}
-                      </p>
+                    <div className="flex items-center gap-2">
+                      <div>
+                        <p className="font-medium text-[#1c1a17]">
+                          {page.surgery_type}
+                        </p>
+                        <p className="mt-0.5 font-mono text-[12px] text-[#1c1a17]/40">
+                          {page.product_count}{" "}
+                          {page.product_count === 1 ? "product" : "products"}
+                        </p>
+                      </div>
+                      {page.show_doctor ? (
+                        <span className="rounded-full bg-[#1c1a17]/6 px-2.5 py-0.5 font-mono text-[11px] text-[#1c1a17]/40">
+                          {page.doctor_name}
+                        </span>
+                      ) : (
+                        <span className="rounded-full bg-blue-50 px-2.5 py-0.5 font-mono text-[11px] text-blue-700">
+                          Practice
+                        </span>
+                      )}
                     </div>
                     <div className="flex items-center gap-3">
                       <span
@@ -151,6 +170,17 @@ export default async function PortalPage() {
                       >
                         Edit
                       </Link>
+                      {isOtherDoctor && (
+                        <form action={copyPage}>
+                          <input type="hidden" name="sourcePageId" value={page.id} />
+                          <button
+                            type="submit"
+                            className="font-mono text-[12px] text-[#1c1a17]/50 underline underline-offset-2 hover:text-[#1c1a17]"
+                          >
+                            Copy
+                          </button>
+                        </form>
+                      )}
                     </div>
                   </div>
                   {page.is_published && (
