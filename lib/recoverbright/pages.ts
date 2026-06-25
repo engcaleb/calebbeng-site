@@ -138,3 +138,82 @@ export async function getPublishedPage(
     products,
   };
 }
+
+export async function getPublishedPracticePage(
+  practiceSlug: string,
+  surgeryTypeSegment: string
+): Promise<PublishedPage | null> {
+  const supabase = await createClient();
+  const surgeryType = urlToSurgeryType(surgeryTypeSegment);
+
+  const { data: practice, error: practiceErr } = await supabase
+    .from("rw_practices")
+    .select("id, name, slug, logo_url")
+    .eq("slug", practiceSlug)
+    .single();
+  if (practiceErr || !practice) return null;
+
+  // Find all doctors in the practice
+  const { data: doctors } = await supabase
+    .from("rw_doctors")
+    .select("id, name, slug")
+    .eq("practice_id", practice.id);
+  if (!doctors?.length) return null;
+
+  // Find published practice-wide page
+  const { data: page } = await supabase
+    .from("rw_recommendation_pages")
+    .select("id, doctor_id, surgery_type, show_doctor")
+    .in("doctor_id", doctors.map((d) => d.id))
+    .eq("surgery_type", surgeryType)
+    .eq("is_published", true)
+    .eq("show_doctor", false)
+    .limit(1)
+    .single();
+  if (!page) return null;
+
+  const pageDoctor = doctors.find((d) => d.id === page.doctor_id)!;
+
+  // Load page products with product details
+  const { data: rows } = await supabase
+    .from("rw_page_products")
+    .select(
+      `id, sort_order, custom_instructions,
+       rw_products ( id, name, slug, category, image_url, default_instructions, buy_url )`
+    )
+    .eq("page_id", page.id)
+    .order("sort_order", { ascending: true });
+
+  type ProductRow = {
+    id: string; name: string; slug: string; category: string;
+    image_url: string | null; default_instructions: string | null; buy_url: string | null;
+  };
+
+  const products: PageProduct[] = (rows ?? [])
+    .filter((r) => r.rw_products)
+    .map((r) => {
+      const raw = r.rw_products as unknown;
+      const p = (Array.isArray(raw) ? raw[0] : raw) as ProductRow;
+      return {
+        page_product_id: r.id,
+        sort_order: r.sort_order,
+        instructions: r.custom_instructions ?? p.default_instructions,
+        product_id: p.id,
+        name: p.name,
+        slug: p.slug,
+        category: p.category,
+        image_url: p.image_url,
+        buy_url: p.buy_url,
+      };
+    });
+
+  return {
+    id: page.id,
+    surgery_type: page.surgery_type,
+    practice,
+    doctor_name: pageDoctor.name,
+    doctor_slug: pageDoctor.slug,
+    show_doctor: false,
+    products,
+  };
+}
