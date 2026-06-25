@@ -25,6 +25,7 @@ export type MyPage = {
   id: string;
   surgery_type: string;
   is_published: boolean;
+  show_doctor: boolean;
   product_count: number;
   doctor_name: string;
   doctor_slug: string;
@@ -75,7 +76,7 @@ export async function getPracticePages(practiceId: string): Promise<MyPage[]> {
 
   const { data, error } = await supabase
     .from("rw_recommendation_pages")
-    .select("id, surgery_type, is_published, doctor_id, rw_page_products(id)")
+    .select("id, surgery_type, is_published, show_doctor, doctor_id, rw_page_products(id)")
     .in("doctor_id", doctors.map((d) => d.id))
     .order("created_at", { ascending: true });
   if (error) throw error;
@@ -86,6 +87,7 @@ export async function getPracticePages(practiceId: string): Promise<MyPage[]> {
       id: p.id,
       surgery_type: p.surgery_type,
       is_published: p.is_published,
+      show_doctor: p.show_doctor,
       product_count: Array.isArray(p.rw_page_products)
         ? p.rw_page_products.length
         : 0,
