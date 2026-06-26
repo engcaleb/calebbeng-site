@@ -188,6 +188,17 @@ export function PageEditor({
         </div>
       </div>
 
+      {/* ── Search ─────────────────────────────────────────── */}
+      <div className="mb-6">
+        <input
+          type="search"
+          placeholder="Search products…"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="input w-full"
+        />
+      </div>
+
       {/* ── List header ────────────────────────────────────── */}
       <div className="mb-3 flex items-center justify-between">
         <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#1c1a17]/35">
@@ -263,9 +274,7 @@ export function PageEditor({
         defaultProducts={defaultProducts}
         nonDefaultProducts={nonDefaultProducts}
         selected={selected}
-        search={search}
         query={query}
-        onSearchChange={setSearch}
         onAdd={addProduct}
       />
 
@@ -406,116 +415,56 @@ function AddProductsSection({
   defaultProducts,
   nonDefaultProducts,
   selected,
-  search,
   query,
-  onSearchChange,
   onAdd,
 }: {
   defaultProducts: RwProduct[];
   nonDefaultProducts: RwProduct[];
   selected: Map<string, ProductState>;
-  search: string;
   query: string;
-  onSearchChange: (value: string) => void;
   onAdd: (productId: string) => void;
 }) {
-  const [othersOpen, setOthersOpen] = useState(false);
+  const unadded = useMemo(() => {
+    const all = [...defaultProducts, ...nonDefaultProducts].filter(
+      (p) => !selected.has(p.id)
+    );
+    if (!query) return all;
+    return all.filter(
+      (p) =>
+        p.name.toLowerCase().includes(query) ||
+        p.category.toLowerCase().includes(query)
+    );
+  }, [defaultProducts, nonDefaultProducts, selected, query]);
 
-  const filteredDefaults = useMemo(
-    () =>
-      query
-        ? defaultProducts.filter(
-            (p) =>
-              p.name.toLowerCase().includes(query) ||
-              p.category.toLowerCase().includes(query)
-          )
-        : defaultProducts,
-    [query, defaultProducts]
-  );
+  const groups = useMemo(() => groupByCategory(unadded), [unadded]);
 
-  const filteredOthers = useMemo(
-    () =>
-      query
-        ? nonDefaultProducts.filter(
-            (p) =>
-              p.name.toLowerCase().includes(query) ||
-              p.category.toLowerCase().includes(query)
-          )
-        : nonDefaultProducts,
-    [query, nonDefaultProducts]
-  );
-
-  const defaultGroups = useMemo(
-    () => groupByCategory(filteredDefaults),
-    [filteredDefaults]
-  );
-  const otherGroups = useMemo(
-    () => groupByCategory(filteredOthers),
-    [filteredOthers]
-  );
+  if (groups.length === 0) {
+    return (
+      <div className="mt-8">
+        <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.22em] text-[#1c1a17]/35">
+          Add Products
+        </p>
+        <p className="py-4 text-center font-mono text-[12px] text-[#1c1a17]/30">
+          {query ? "No products found" : "All products added"}
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="mt-8">
       <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.22em] text-[#1c1a17]/35">
-        Add Products
+        Add Products · {unadded.length}
       </p>
-      <input
-        type="search"
-        placeholder="Search products..."
-        value={search}
-        onChange={(e) => onSearchChange(e.target.value)}
-        className="input w-full mb-3"
-      />
-
-      {/* Tier 1: defaults for this surgery type */}
-      {defaultGroups.map((group) => (
+      {groups.map((group) => (
         <CategorySection
           key={group.category}
           category={group.category}
           products={group.products}
-          selected={selected}
           onAdd={onAdd}
           defaultOpen={true}
         />
       ))}
-
-      {/* Tier 2: all other products */}
-      {otherGroups.length > 0 && (
-        <div className="mt-2">
-          <button
-            type="button"
-            onClick={() => setOthersOpen((v) => !v)}
-            className="flex w-full items-center justify-between rounded-lg border border-[#e8e3da] bg-white px-4 py-3 text-left transition hover:bg-[#faf9f7]"
-          >
-            <span className="font-mono text-[11px] text-[#1c1a17]/50">
-              All other products · {filteredOthers.length}
-            </span>
-            <span className="font-mono text-[12px] text-[#1c1a17]/30">
-              {othersOpen ? "▾" : "▸"}
-            </span>
-          </button>
-          {othersOpen && (
-            <div className="mt-2">
-              {otherGroups.map((group) => (
-                <CategorySection
-                  key={group.category}
-                  category={group.category}
-                  products={group.products}
-                  selected={selected}
-                  onAdd={onAdd}
-                  defaultOpen={true}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {defaultGroups.length === 0 && filteredOthers.length === 0 && query && (
-        <p className="py-4 text-center font-mono text-[12px] text-[#1c1a17]/30">
-          No products found
-        </p>
-      )}
     </div>
   );
 }
@@ -523,13 +472,11 @@ function AddProductsSection({
 function CategorySection({
   category,
   products,
-  selected,
   onAdd,
   defaultOpen,
 }: {
   category: string;
   products: RwProduct[];
-  selected: Map<string, ProductState>;
   onAdd: (productId: string) => void;
   defaultOpen: boolean;
 }) {
@@ -551,43 +498,32 @@ function CategorySection({
       </button>
       {open && (
         <div className="mt-1 space-y-1">
-          {products.map((product) => {
-            const isSelected = selected.has(product.id);
-            return (
-              <div
-                key={product.id}
-                className={`flex items-center gap-3 rounded-lg border border-[#e8e3da] px-4 py-2.5 ${
-                  isSelected ? "bg-[#f9f7f4] opacity-50" : "bg-white"
-                }`}
+          {products.map((product) => (
+            <div
+              key={product.id}
+              className="flex items-center gap-3 rounded-lg border border-[#e8e3da] bg-white px-4 py-2.5"
+            >
+              {product.image_url && (
+                <Image
+                  src={product.image_url}
+                  alt=""
+                  width={32}
+                  height={32}
+                  className="h-8 w-8 shrink-0 rounded object-contain"
+                />
+              )}
+              <p className="flex-1 min-w-0 text-[13px] text-[#1c1a17]">
+                {product.name}
+              </p>
+              <button
+                type="button"
+                onClick={() => onAdd(product.id)}
+                className="shrink-0 font-mono text-[12px] text-[#1c1a17]/50 hover:text-[#1c1a17] transition"
               >
-                {product.image_url && (
-                  <Image
-                    src={product.image_url}
-                    alt=""
-                    width={32}
-                    height={32}
-                    className="h-8 w-8 shrink-0 rounded object-contain"
-                  />
-                )}
-                <p className="flex-1 min-w-0 text-[13px] text-[#1c1a17]">
-                  {product.name}
-                </p>
-                {isSelected ? (
-                  <span className="shrink-0 font-mono text-[12px] text-green-600">
-                    ✓
-                  </span>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => onAdd(product.id)}
-                    className="shrink-0 font-mono text-[12px] text-[#1c1a17]/50 hover:text-[#1c1a17] transition"
-                  >
-                    + Add
-                  </button>
-                )}
-              </div>
-            );
-          })}
+                + Add
+              </button>
+            </div>
+          ))}
         </div>
       )}
     </div>
