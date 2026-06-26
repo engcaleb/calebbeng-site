@@ -42,7 +42,6 @@ export default async function BrowseProcedurePage({ params }: Props) {
     categoryMap.set(p.category, list);
   }
   const categories = Array.from(categoryMap.entries());
-
   const otherTypes = surgeryTypes.filter((t) => t !== surgeryType);
 
   return (
@@ -85,10 +84,10 @@ export default async function BrowseProcedurePage({ params }: Props) {
           </h1>
           <p className="mt-3 max-w-xl text-[16px] leading-relaxed text-[#1c1a17]/55">
             {products.length > 0
-              ? `${products.length} recommended products, curated based on what physicians most commonly recommend for ${surgeryType} recovery.`
+              ? `${products.length} recommended products for ${surgeryType} recovery, curated based on physician recommendations.`
               : `Recovery guidance for ${surgeryType}.`}
           </p>
-          <p className="mt-5 inline-block rounded-full bg-[#e8f2ec] px-4 py-1.5 font-mono text-[11px] text-[#5c8a6e]">
+          <p className="mt-5 font-mono text-[12px] text-[#1c1a17]/40">
             Have a personalized link from your care team? That takes priority — it's tailored for you.
           </p>
         </div>
@@ -103,7 +102,7 @@ export default async function BrowseProcedurePage({ params }: Props) {
             </p>
             <Link
               href="/recoverbright/articles"
-              className="mt-4 inline-block text-[14px] text-[#5c8a6e] hover:text-[#4a7a5c] transition"
+              className="mt-4 inline-block text-[14px] text-[#1c1a17]/60 underline underline-offset-2 hover:text-[#1c1a17] transition"
             >
               Browse recovery articles →
             </Link>
@@ -119,7 +118,7 @@ export default async function BrowseProcedurePage({ params }: Props) {
                   {catProducts.map((product) => (
                     <div
                       key={product.id}
-                      className="flex gap-4 rounded-xl border border-[#e8e3da] bg-white p-5 transition hover:border-[#d0e6d8]"
+                      className="flex gap-4 rounded-xl border border-[#e8e3da] bg-white p-5 transition hover:border-[#1c1a17]/20"
                     >
                       {product.image_url && (
                         <Image
@@ -144,7 +143,7 @@ export default async function BrowseProcedurePage({ params }: Props) {
                             href={product.buy_url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="mt-3 inline-flex w-fit items-center gap-1.5 rounded-lg bg-[#5c8a6e] px-4 py-2 text-[13px] font-medium text-white transition hover:bg-[#4a7a5c]"
+                            className="mt-3 inline-flex w-fit items-center gap-1 rounded-lg border border-[#1c1a17]/15 px-4 py-2 text-[13px] font-medium text-[#1c1a17] transition hover:bg-[#1c1a17] hover:text-[#f9f7f4]"
                           >
                             View on Amazon →
                           </a>
@@ -173,7 +172,7 @@ export default async function BrowseProcedurePage({ params }: Props) {
                 <Link
                   key={t}
                   href={`/recoverbright/browse/${surgeryTypeToUrlSegment(t)}`}
-                  className="rounded-lg border border-[#e8e3da] bg-white px-4 py-2.5 text-[14px] text-[#1c1a17]/70 transition hover:border-[#5c8a6e] hover:text-[#5c8a6e]"
+                  className="rounded-lg border border-[#e8e3da] bg-white px-4 py-2.5 text-[14px] text-[#1c1a17]/70 transition hover:border-[#1c1a17]/25 hover:text-[#1c1a17]"
                 >
                   {t}
                 </Link>

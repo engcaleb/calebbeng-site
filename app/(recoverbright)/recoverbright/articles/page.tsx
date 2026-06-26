@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getPublishedArticles } from "@/lib/recoverbright/articles";
+import { ArticlesClient } from "./ArticlesClient";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -28,25 +29,27 @@ export const metadata: Metadata = {
 export default async function ArticlesPage() {
   const articles = await getPublishedArticles();
 
-  const categories = [
-    ...new Set(articles.map((a) => a.category).filter(Boolean) as string[]),
-  ];
-
   return (
     <div className="min-h-screen bg-[#f9f7f4] text-[#1c1a17]">
       <nav className="flex items-center justify-between px-6 py-5 md:px-12">
         <Link
           href="/recoverbright"
-          className="font-mono text-[12px] uppercase tracking-[0.28em] text-[#1c1a17]/60"
+          className="font-mono text-[12px] uppercase tracking-[0.28em] text-[#1c1a17]/60 hover:text-[#1c1a17] transition"
         >
           RecoverBright
         </Link>
         <div className="flex items-center gap-6">
           <Link
-            href="/recoverbright/portal/login"
+            href="#"
             className="text-[13px] text-[#1c1a17]/50 hover:text-[#1c1a17] transition"
           >
-            Sign in
+            Browse
+          </Link>
+          <Link
+            href="/recoverbright/portal/login"
+            className="text-[13px] text-[#1c1a17]/35 hover:text-[#1c1a17] transition"
+          >
+            Provider login →
           </Link>
         </div>
       </nav>
@@ -63,64 +66,7 @@ export default async function ArticlesPage() {
           smooth recovery.
         </p>
 
-        {categories.length > 0 && (
-          <div className="mt-8 flex flex-wrap gap-2">
-            {categories.map((cat) => (
-              <span
-                key={cat}
-                className="rounded-full border border-[#1c1a17]/10 px-3 py-1 font-mono text-[11px] text-[#1c1a17]/50"
-              >
-                {cat}
-              </span>
-            ))}
-          </div>
-        )}
-
-        {articles.length === 0 ? (
-          <p className="mt-16 text-center text-[15px] text-[#1c1a17]/40">
-            Articles coming soon.
-          </p>
-        ) : (
-          <div className="mt-12 space-y-6">
-            {articles.map((article) => (
-              <Link
-                key={article.id}
-                href={`/recoverbright/articles/${article.slug}`}
-                className="block overflow-hidden rounded-xl border border-[#e8e3da] bg-white transition hover:border-[#1c1a17]/20"
-              >
-                {article.image_url && (
-                  <img
-                    src={article.image_url}
-                    alt=""
-                    className="h-48 w-full object-cover"
-                  />
-                )}
-                <div className="p-6">
-                  {article.category && (
-                    <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.22em] text-[#1c1a17]/35">
-                      {article.category}
-                    </p>
-                  )}
-                  <h2 className="text-[17px] font-medium text-[#1c1a17]">
-                    {article.title}
-                  </h2>
-                  {article.excerpt && (
-                    <p className="mt-2 text-[14px] leading-relaxed text-[#1c1a17]/55">
-                      {article.excerpt}
-                    </p>
-                  )}
-                  <p className="mt-3 font-mono text-[11px] text-[#1c1a17]/30">
-                    {new Date(article.created_at).toLocaleDateString("en-US", {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })}
-                  </p>
-                </div>
-              </Link>
-            ))}
-          </div>
-        )}
+        <ArticlesClient articles={articles} />
       </section>
 
       <footer className="border-t border-[#e8e3da] px-6 py-8 md:px-12">

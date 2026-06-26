@@ -48,9 +48,6 @@ export default async function RecoverBrightHome() {
 
       {/* ── Hero ─────────────────────────────────────────────── */}
       <section className="mx-auto max-w-4xl px-6 pb-20 pt-20 text-center md:px-12 md:pt-28">
-        <p className="mb-5 inline-block rounded-full bg-[#e8f2ec] px-4 py-1.5 font-mono text-[11px] uppercase tracking-[0.2em] text-[#5c8a6e]">
-          Doctor-curated recovery guides
-        </p>
         <h1 className="text-4xl font-medium leading-tight tracking-tight md:text-5xl lg:text-[3.5rem]">
           Know exactly what you<br className="hidden sm:block" /> need to
           recover.
@@ -62,7 +59,7 @@ export default async function RecoverBrightHome() {
         <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
           <Link
             href="#browse"
-            className="rounded-lg bg-[#5c8a6e] px-6 py-3 text-[14px] font-medium text-white transition hover:bg-[#4a7a5c]"
+            className="rounded-lg bg-[#1c1a17] px-6 py-3 text-[14px] font-medium text-[#f9f7f4] transition hover:bg-[#1c1a17]/80"
           >
             Browse by procedure ↓
           </Link>
@@ -95,7 +92,7 @@ export default async function RecoverBrightHome() {
                 <Link
                   key={surgeryType}
                   href={`/recoverbright/browse/${slug}`}
-                  className="group flex flex-col justify-between rounded-xl border border-[#e8e3da] bg-[#f9f7f4] p-5 transition hover:border-[#5c8a6e] hover:bg-white"
+                  className="group flex flex-col justify-between rounded-xl border border-[#e8e3da] bg-[#f9f7f4] p-5 transition hover:border-[#1c1a17]/25 hover:bg-white"
                 >
                   <div>
                     <h3 className="text-[17px] font-medium text-[#1c1a17]">
@@ -107,7 +104,7 @@ export default async function RecoverBrightHome() {
                       </p>
                     )}
                   </div>
-                  <p className="mt-5 text-[13px] font-medium text-[#5c8a6e] transition group-hover:text-[#4a7a5c]">
+                  <p className="mt-5 text-[13px] font-medium text-[#1c1a17]/40 transition group-hover:text-[#1c1a17]">
                     See guide →
                   </p>
                 </Link>
@@ -124,9 +121,9 @@ export default async function RecoverBrightHome() {
       </section>
 
       {/* ── How it works ─────────────────────────────────────── */}
-      <section className="border-t border-[#e8e3da] bg-[#f0f6f2] px-6 py-16 md:px-12">
+      <section className="border-t border-[#e8e3da] px-6 py-16 md:px-12">
         <div className="mx-auto max-w-4xl">
-          <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.28em] text-[#5c8a6e]/70">
+          <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.28em] text-[#1c1a17]/40">
             How it works
           </p>
           <h2 className="mb-10 text-2xl font-medium tracking-tight md:text-3xl">
@@ -167,7 +164,7 @@ export default async function RecoverBrightHome() {
               </div>
               <Link
                 href="/recoverbright/articles"
-                className="shrink-0 text-[13px] text-[#1c1a17]/40 transition hover:text-[#5c8a6e]"
+                className="shrink-0 text-[13px] text-[#1c1a17]/40 transition hover:text-[#1c1a17]"
               >
                 View all →
               </Link>
@@ -177,7 +174,7 @@ export default async function RecoverBrightHome() {
                 <Link
                   key={article.id}
                   href={`/recoverbright/articles/${article.slug}`}
-                  className="group overflow-hidden rounded-xl border border-[#e8e3da] bg-[#f9f7f4] transition hover:border-[#5c8a6e]"
+                  className="group overflow-hidden rounded-xl border border-[#e8e3da] bg-[#f9f7f4] transition hover:border-[#1c1a17]/20"
                 >
                   {article.image_url && (
                     <img
@@ -188,7 +185,7 @@ export default async function RecoverBrightHome() {
                   )}
                   <div className="p-5">
                     {article.category && (
-                      <p className="mb-2 inline-block rounded-full bg-[#e8f2ec] px-3 py-1 font-mono text-[10px] uppercase tracking-[0.18em] text-[#5c8a6e]">
+                      <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.22em] text-[#1c1a17]/35">
                         {article.category}
                       </p>
                     )}
@@ -260,8 +257,6 @@ export default async function RecoverBrightHome() {
   );
 }
 
-// ── Sub-components ─────────────────────────────────────────────────────────
-
 function HowItWorksStep({
   number,
   title,
@@ -273,7 +268,7 @@ function HowItWorksStep({
 }) {
   return (
     <div>
-      <p className="mb-3 font-mono text-[11px] tracking-[0.18em] text-[#5c8a6e]/60">
+      <p className="mb-3 font-mono text-[11px] tracking-[0.18em] text-[#1c1a17]/30">
         {number}
       </p>
       <h3 className="mb-2 text-[16px] font-medium text-[#1c1a17]">{title}</h3>
