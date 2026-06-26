@@ -208,32 +208,17 @@ export default async function RecoverBrightHome() {
         </section>
       )}
 
-      {/* ── Trust + disclosure ───────────────────────────────── */}
+      {/* ── Trust ───────────────────────────────────────────── */}
       <section className="border-t border-[#e8e3da] px-6 py-16 md:px-12">
         <div className="mx-auto max-w-4xl">
-          <div className="grid gap-8 md:grid-cols-2 md:gap-12">
-            <div>
-              <h2 className="text-xl font-medium tracking-tight md:text-2xl">
-                Honest recommendations — never sponsored.
-              </h2>
-              <p className="mt-4 text-[15px] leading-relaxed text-[#1c1a17]/55">
-                Products appear on RecoverBright because physicians chose them —
-                not because companies paid for placement. Our guides reflect
-                what care teams actually recommend to their patients.
-              </p>
-            </div>
-            <div className="rounded-xl bg-[#e8f2ec] px-6 py-5">
-              <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.2em] text-[#5c8a6e]">
-                Affiliate disclosure
-              </p>
-              <p className="text-[13px] leading-relaxed text-[#1c1a17]/65">
-                As an Amazon Associate I earn from qualifying purchases. When
-                you buy through product links on this site, RecoverBright may
-                earn a small commission — at no extra cost to you. This never
-                influences which products are recommended.
-              </p>
-            </div>
-          </div>
+          <h2 className="text-xl font-medium tracking-tight md:text-2xl">
+            Honest recommendations — never sponsored.
+          </h2>
+          <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-[#1c1a17]/55">
+            Products appear on RecoverBright because physicians chose them —
+            not because companies paid for placement. Our guides reflect what
+            care teams actually recommend to their patients.
+          </p>
         </div>
       </section>
 

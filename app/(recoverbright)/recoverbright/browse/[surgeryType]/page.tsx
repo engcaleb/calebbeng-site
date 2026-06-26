@@ -143,13 +143,10 @@ export default async function BrowseProcedurePage({ params }: Props) {
                           <a
                             href={product.buy_url}
                             target="_blank"
-                            rel="noopener noreferrer sponsored"
+                            rel="noopener noreferrer"
                             className="mt-3 inline-flex w-fit items-center gap-1.5 rounded-lg bg-[#5c8a6e] px-4 py-2 text-[13px] font-medium text-white transition hover:bg-[#4a7a5c]"
                           >
-                            View on Amazon
-                            <span className="font-mono text-[10px] text-white/60">
-                              (paid link)
-                            </span>
+                            View on Amazon →
                           </a>
                         ) : (
                           <p className="mt-3 font-mono text-[11px] text-[#1c1a17]/30">
@@ -185,21 +182,8 @@ export default async function BrowseProcedurePage({ params }: Props) {
           </div>
         )}
 
-        {/* ── Disclosure ────────────────────────────────────── */}
-        <div className="mt-12 rounded-xl bg-[#e8f2ec] px-6 py-5">
-          <p className="mb-1 font-mono text-[10px] uppercase tracking-[0.2em] text-[#5c8a6e]">
-            Affiliate disclosure
-          </p>
-          <p className="text-[12px] leading-relaxed text-[#1c1a17]/60">
-            As an Amazon Associate I earn from qualifying purchases. Product
-            links on this page may earn RecoverBright a small commission at no
-            extra cost to you. This never influences which products appear —
-            selections reflect physician recommendations only.
-          </p>
-        </div>
-
         {/* ── Medical disclaimer ────────────────────────────── */}
-        <p className="mt-6 text-center font-mono text-[11px] text-[#1c1a17]/30">
+        <p className="mt-12 text-center font-mono text-[11px] text-[#1c1a17]/30">
           Not a substitute for medical advice. Always follow your doctor's
           instructions.
         </p>
