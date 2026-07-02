@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { validatePassword } from "@/lib/recoverbright/password";
 import { notifyNewSignup } from "@/lib/recoverbright/email";
+import { checkRateLimit } from "@/lib/recoverbright/rate-limit";
 
 function slugify(name: string): string {
   return name
@@ -30,6 +31,11 @@ export async function joinAction(formData: FormData) {
 
   if (!token || !doctorName || !email || !password || !confirmPassword) {
     errorRedirect(token, "All fields are required.");
+  }
+
+  const allowed = await checkRateLimit("join", 5, 60 * 60);
+  if (!allowed) {
+    errorRedirect(token, "Too many attempts. Please try again in an hour.");
   }
 
   if (password !== confirmPassword) {

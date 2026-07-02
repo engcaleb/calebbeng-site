@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import { joinAction } from "./actions";
 
 type Params = Promise<{ token: string }>;
@@ -15,7 +15,10 @@ export default async function JoinPage({
   const { token } = await params;
   const { error } = await searchParams;
 
-  const supabase = await createClient();
+  // rw_invites has no anon SELECT policy (tokens must not be enumerable),
+  // so this lookup uses the service-role client. The token itself is the
+  // only credential — it comes from the URL, not from a broader query.
+  const supabase = createServiceClient();
   const { data: invite } = await supabase
     .from("rw_invites")
     .select("id, practice_id, expires_at, rw_practices(name)")

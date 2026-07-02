@@ -1,22 +1,22 @@
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { createClient } from "@/lib/supabase/server";
+import { isAdminEmail } from "@/lib/recoverbright/auth";
 
 export const dynamic = "force-dynamic";
 
 const ALLOWED_BUCKETS = ["practice-logos", "product-images", "article-images"] as const;
 type AllowedBucket = (typeof ALLOWED_BUCKETS)[number];
 
-function extFromMime(mime: string): string {
-  const map: Record<string, string> = {
-    "image/jpeg": "jpg",
-    "image/jpg": "jpg",
-    "image/png": "png",
-    "image/webp": "webp",
-    "image/gif": "gif",
-  };
-  return map[mime] ?? "jpg";
-}
+// No fallback extension — an unrecognized MIME type is rejected outright
+// rather than silently stored as ".jpg" with attacker-controlled contentType.
+const MIME_TO_EXT: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/jpg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+  "image/gif": "gif",
+};
 
 export async function POST(req: Request) {
   const authClient = await createClient();
@@ -49,7 +49,34 @@ export async function POST(req: Request) {
       );
     }
 
-    const ext = extFromMime(file.type);
+    const ext = MIME_TO_EXT[file.type];
+    if (!ext) {
+      return NextResponse.json(
+        { error: "Unsupported image type. Use JPEG, PNG, WebP, or GIF." },
+        { status: 400 }
+      );
+    }
+
+    // Ownership check: the caller must actually control the thing `id`
+    // points at. Without this, any authenticated doctor could overwrite
+    // any practice logo, product image, or article image by guessing/
+    // reading its id.
+    if (bucket === "practice-logos") {
+      const { data: doctor } = await authClient
+        .from("rw_doctors")
+        .select("practice_id")
+        .eq("auth_user_id", user.id)
+        .single();
+      if (!doctor || doctor.practice_id !== id) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
+    } else {
+      // product-images and article-images are admin-managed catalogs.
+      if (!isAdminEmail(user.email)) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
+    }
+
     const path = `${id}/image.${ext}`;
     const bytes = await file.arrayBuffer();
 

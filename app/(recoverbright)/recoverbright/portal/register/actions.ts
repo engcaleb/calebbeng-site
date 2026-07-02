@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { validatePassword } from "@/lib/recoverbright/password";
 import { notifyNewSignup } from "@/lib/recoverbright/email";
+import { checkRateLimit } from "@/lib/recoverbright/rate-limit";
 
 function slugify(name: string): string {
   return name
@@ -30,6 +31,11 @@ function errorRedirect(message: string): never {
 }
 
 export async function registerAction(formData: FormData) {
+  const allowed = await checkRateLimit("register", 5, 60 * 60);
+  if (!allowed) {
+    errorRedirect("Too many signup attempts. Please try again in an hour.");
+  }
+
   const practiceName = (formData.get("practiceName") as string)?.trim();
   const doctorName = (formData.get("doctorName") as string)?.trim();
   const email = (formData.get("email") as string)?.trim();

@@ -21,6 +21,12 @@ export default async function LoginPage({
           </p>
         )}
 
+        {error === "rate_limited" && (
+          <p className="mb-4 rounded-md bg-red-50 px-3 py-2 font-mono text-sm text-red-600">
+            Too many login attempts. Please try again in a few minutes.
+          </p>
+        )}
+
         <form action={loginAction} className="flex flex-col gap-4">
           <div>
             <label className="label" htmlFor="email">

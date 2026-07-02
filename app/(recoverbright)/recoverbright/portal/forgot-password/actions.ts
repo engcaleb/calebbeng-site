@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { headers } from "next/headers";
+import { checkRateLimit } from "@/lib/recoverbright/rate-limit";
 
 export async function forgotPasswordAction(formData: FormData) {
   const email = (formData.get("email") as string)?.trim();
@@ -10,6 +11,13 @@ export async function forgotPasswordAction(formData: FormData) {
   if (!email) {
     redirect(
       `/recoverbright/portal/forgot-password?error=${encodeURIComponent("Email is required.")}`
+    );
+  }
+
+  const allowed = await checkRateLimit("forgot-password", 5, 60 * 60);
+  if (!allowed) {
+    redirect(
+      `/recoverbright/portal/forgot-password?error=${encodeURIComponent("Too many attempts. Please try again in an hour.")}`
     );
   }
 

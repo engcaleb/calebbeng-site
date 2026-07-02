@@ -5,13 +5,17 @@ import { createClient } from "@/lib/supabase/server";
 
 const ADMIN_EMAILS = ["calebeng21@gmail.com"];
 
+export function isAdminEmail(email: string | null | undefined): boolean {
+  return !!email && ADMIN_EMAILS.includes(email);
+}
+
 export const requireAdmin = cache(async (): Promise<void> => {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user || !ADMIN_EMAILS.includes(user.email ?? "")) {
+  if (!user || !isAdminEmail(user.email)) {
     redirect("/recoverbright/portal/login");
   }
 });
